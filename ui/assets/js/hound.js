@@ -3,6 +3,8 @@ import { render } from 'react-dom';
 
 import {UrlToRepo} from './common';
 
+const qs = (params) => Object.keys(params).map(key => key + '=' + params[key]).join('&');
+
 var Signal = function() {
 };
 
@@ -140,18 +142,13 @@ var Model = {
       return;
     }
 
-    $.ajax({
-      url: 'api/v1/repos',
-      dataType: 'json',
-      success: function(data) {
-        _this.repos = data;
-        next();
-      },
-      error: function(xhr, status, err) {
-        // TODO(knorton): Fix these
-        console.error(err);
-      }
-    });
+    fetch('api/v1/repos')
+    .then((response) => response.json())
+    .then((data) => {
+      _this.repos = data;
+      next();
+    })
+    .catch((response) => console.log(response));
   },
 
   Search: function(params) {
@@ -159,11 +156,12 @@ var Model = {
     var _this = this,
         startedAt = Date.now();
 
-    params = $.extend({
+    params = {
       stats: 'fosho',
       repos: '*',
       rng: ':20',
-    }, params);
+      ...params
+    };
 
     if (params.repos === '') {
       params.repos = '*';
@@ -182,12 +180,9 @@ var Model = {
       return;
     }
 
-    $.ajax({
-      url: 'api/v1/search',
-      data: params,
-      type: 'GET',
-      dataType: 'json',
-      success: function(data) {
+    fetch(`api/v1/search?${qs(params)}`)
+    .then((response) => response.json())
+    .then((data) => {
         if (data.Error) {
           _this.didError.raise(_this, data.Error);
           return;
@@ -228,11 +223,8 @@ var Model = {
         };
 
         _this.didSearch.raise(_this, _this.results, _this.stats);
-      },
-      error: function(xhr, status, err) {
-        _this.didError.raise(this, "The server broke down");
-      }
-    });
+      })
+    .catch(() => _this.didError.raise(this, "The server broke down"));
   },
 
   LoadMore: function(repo) {
@@ -245,30 +237,25 @@ var Model = {
 
     _this.willLoadMore.raise(this, repo, numLoaded, numNeeded, numToLoad);
 
-    var params = $.extend(this.params, {
+    const params = {
+      ...this.params,
       rng: numLoaded+':'+endAt,
       repos: repo
-    });
+    };
 
-    $.ajax({
-      url: 'api/v1/search',
-      data: params,
-      type: 'GET',
-      dataType: 'json',
-      success: function(data) {
-        if (data.Error) {
-          _this.didError.raise(_this, data.Error);
-          return;
-        }
-
-        var result = data.Results[repo];
-        results.Matches = results.Matches.concat(result.Matches);
-        _this.didLoadMore.raise(_this, repo, _this.results);
-      },
-      error: function(xhr, status, err) {
-        _this.didError.raise(this, "The server broke down");
+    fetch(`api/v1/search?${qs(params)}`)
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.Error) {
+        _this.didError.raise(_this, data.Error);
+        return;
       }
-    });
+
+      var result = data.Results[repo];
+      results.Matches = results.Matches.concat(result.Matches);
+      _this.didLoadMore.raise(_this, repo, _this.results);
+    })
+    .catch(() => _this.didError.raise(this, "The server broke down"));
   },
 
   NameForRepo: function(repo) {
@@ -689,7 +676,7 @@ class FilesView extends React.Component {
       });
 
       return (
-        <div className="file">
+        <div className="file" key={match.Filename}>
           <div className="title">
             <a href={Model.UrlToRepo(repo, match.Filename, null, rev)}>
               {match.Filename}
@@ -763,7 +750,7 @@ class ResultView extends React.Component{
         results = this.state.results || [];
     var repos = results.map(function(result, index) {
       return (
-        <div className="repo">
+        <div className="repo" key={result.Repo}>
           <div className="title">
             <span className="mega-octicon octicon-repo"></span>
             <span className="name">{Model.NameForRepo(result.Repo)}</span>
