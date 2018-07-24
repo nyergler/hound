@@ -25,7 +25,7 @@ $(GOPATH)/bin/hound: ui/bindata.go $(SRCS)
 
 ui/bindata.go: .build/bin/go-bindata node_modules $(wildcard ui/assets/**/*)
 	rsync -r ui/assets/* .build/ui
-	npx webpack $(WEBPACK_ARGS)
+	npm run webpack -- $(WEBPACK_ARGS)
 	$< -o $@ -pkg ui -prefix .build/ui -nomemcopy .build/ui/...
 
 test:

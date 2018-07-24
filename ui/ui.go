@@ -5,12 +5,12 @@ import (
 	"errors"
 	"fmt"
 	html_template "html/template"
-	text_template "text/template"
 	"io"
 	"log"
 	"net/http"
 	"path/filepath"
 	"runtime"
+	text_template "text/template"
 
 	"github.com/etsy/hound/config"
 )
@@ -175,6 +175,17 @@ func renderForPrd(w io.Writer, c *content, cfgJson string, r *http.Request) erro
 func assetDir() string {
 	_, file, _, _ := runtime.Caller(0)
 	dir, err := filepath.Abs(
+		filepath.Join(filepath.Dir(file), "..", ".build", "ui"))
+	if err != nil {
+		log.Panic(err)
+	}
+	fmt.Println(dir)
+	return dir
+}
+
+func templateDir() string {
+	_, file, _, _ := runtime.Caller(0)
+	dir, err := filepath.Abs(
 		filepath.Join(filepath.Dir(file), "assets"))
 	if err != nil {
 		log.Panic(err)
@@ -184,11 +195,10 @@ func assetDir() string {
 
 // Create an http.Handler for dev-mode.
 func newDevHandler(cfg *config.Config) (http.Handler, error) {
-	root := assetDir()
 	return &devHandler{
-		Handler: http.FileServer(http.Dir(root)),
+		Handler: http.FileServer(http.Dir(assetDir())),
 		content: contents,
-		root:    root,
+		root:    templateDir(),
 		cfg:     cfg,
 	}, nil
 }
