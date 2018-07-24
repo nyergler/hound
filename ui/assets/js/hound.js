@@ -1,3 +1,6 @@
+import React from 'react';
+import { render } from 'react-dom';
+
 import {UrlToRepo} from './common';
 
 var Signal = function() {
@@ -296,24 +299,30 @@ var Model = {
 
 };
 
-var RepoOption = React.createClass({
-  render: function() {
+class RepoOption extends React.Component {
+  render() {
     return (
       <option value={this.props.value} selected={this.props.selected}>{this.props.value}</option>
     )
   }
-});
+}
 
-var SearchBar = React.createClass({
-  componentWillMount: function() {
+class SearchBar extends React.Component{
+
+  constructor(props) {
+    super(props);
+    this.state = this.getInitialState();
+  }
+
+  componentWillMount() {
     var _this = this;
     Model.didLoadRepos.tap(function(model, repos) {
       _this.setState({ allRepos: Object.keys(repos) });
     });
-  },
+  }
 
-  componentDidMount: function() {
-    var q = this.refs.q.getDOMNode();
+  componentDidMount() {
+    var q = this.refs.q;
 
     // TODO(knorton): Can't set this in jsx
     q.setAttribute('autocomplete', 'off');
@@ -325,19 +334,22 @@ var SearchBar = React.createClass({
     }
 
     q.focus();
-  },
-  getInitialState: function() {
+  }
+
+  getInitialState() {
     return {
       state: null,
       allRepos: [],
       repos: []
     };
-  },
-  queryGotKeydown: function(event) {
+  }
+
+  queryGotKeydown(event) {
     switch (event.keyCode) {
     case 40:
       // this will cause advanced to expand if it is not expanded.
-      this.refs.files.getDOMNode().focus();
+      React.findDOMNode(files).focus();
+      this.refs.files.focus();
       break;
     case 38:
       this.hideAdvanced();
@@ -346,69 +358,79 @@ var SearchBar = React.createClass({
       this.submitQuery();
       break;
     }
-  },
-  queryGotFocus: function(event) {
+  }
+
+  queryGotFocus(event) {
     if (!this.hasAdvancedValues()) {
       this.hideAdvanced();
     }
-  },
-  filesGotKeydown: function(event) {
+  }
+
+  filesGotKeydown(event) {
     switch (event.keyCode) {
     case 38:
       // if advanced is empty, close it up.
-      if (this.refs.files.getDOMNode().value.trim() === '') {
+      if (this.refs.files.value.trim() === '') {
         this.hideAdvanced();
       }
-      this.refs.q.getDOMNode().focus();
+      this.refs.q.focus();
       break;
     case 13:
       this.submitQuery();
       break;
     }
-  },
-  filesGotFocus: function(event) {
+  }
+
+  filesGotFocus(event) {
     this.showAdvanced();
-  },
-  submitQuery: function() {
+  }
+
+  submitQuery() {
     this.props.onSearchRequested(this.getParams());
-  },
-  getRegExp : function() {
+  }
+
+  getRegExp() {
     return new RegExp(
-      this.refs.q.getDOMNode().value.trim(),
-      this.refs.icase.getDOMNode().checked ? 'ig' : 'g');
-  },
-  getParams: function() {
+      this.refs.q.value.trim(),
+      this.refs.icase.checked ? 'ig' : 'g');
+  }
+
+  getParams() {
     // selecting all repos is the same as not selecting any, so normalize the url
     // to have none.
-    var repos = Model.ValidRepos(this.refs.repos.state.value);
-    if (repos.length == Model.RepoCount()) {
-      repos = [];
-    }
+    // var repos = Model.ValidRepos(this.refs.repos.state);
+    // if (repos.length == Model.RepoCount()) {
+    //   repos = [];
+    // }
+    var repos = [];
 
     return {
-      q : this.refs.q.getDOMNode().value.trim(),
-      files : this.refs.files.getDOMNode().value.trim(),
+      q : this.refs.q.value.trim(),
+      files : this.refs.files.value.trim(),
       repos : repos.join(','),
-      i: this.refs.icase.getDOMNode().checked ? 'fosho' : 'nope'
+      i: this.refs.icase.checked ? 'fosho' : 'nope'
     };
-  },
-  setParams: function(params) {
-    var q = this.refs.q.getDOMNode(),
-        i = this.refs.icase.getDOMNode(),
-        files = this.refs.files.getDOMNode();
+  }
+
+  setParams(params) {
+    var q = this.refs.q,
+        i = this.refs.icase,
+        files = this.refs.files;
 
     q.value = params.q;
     i.checked = ParamValueToBool(params.i);
     files.value = params.files;
-  },
-  hasAdvancedValues: function() {
-    return this.refs.files.getDOMNode().value.trim() !== '' || this.refs.icase.getDOMNode().checked || this.refs.repos.getDOMNode().value !== '';
-  },
-  showAdvanced: function() {
-    var adv = this.refs.adv.getDOMNode(),
-        ban = this.refs.ban.getDOMNode(),
-        q = this.refs.q.getDOMNode(),
-        files = this.refs.files.getDOMNode();
+  }
+
+  hasAdvancedValues() {
+    return this.refs.files.value.trim() !== '' || this.refs.icase.checked || this.refs.repos.value !== '';
+  }
+
+  showAdvanced() {
+    var adv = this.refs.adv,
+        ban = this.refs.ban,
+        q = this.refs.q,
+        files = this.refs.files;
 
     css(adv, 'height', 'auto');
     css(adv, 'padding', '10px 0');
@@ -419,11 +441,12 @@ var SearchBar = React.createClass({
     if (q.value.trim() !== '') {
       files.focus();
     }
-  },
-  hideAdvanced: function() {
-    var adv = this.refs.adv.getDOMNode(),
-        ban = this.refs.ban.getDOMNode(),
-        q = this.refs.q.getDOMNode();
+  }
+
+  hideAdvanced() {
+    var adv = this.refs.adv,
+        ban = this.refs.ban,
+        q = this.refs.q;
 
     css(adv, 'height', '0');
     css(adv, 'padding', '0');
@@ -432,8 +455,9 @@ var SearchBar = React.createClass({
     css(ban, 'opacity', '1');
 
     q.focus();
-  },
-  render: function() {
+  }
+
+  render() {
     var repoCount = this.state.allRepos.length,
         repoOptions = [],
         selected = {};
@@ -443,7 +467,7 @@ var SearchBar = React.createClass({
     });
 
     this.state.allRepos.forEach(function(repoName) {
-      repoOptions.push(<RepoOption value={repoName} selected={selected[repoName]}/>);
+      repoOptions.push(<RepoOption key={repoName} value={repoName} selected={selected[repoName]}/>);
     });
 
     var stats = this.state.stats;
@@ -473,17 +497,17 @@ var SearchBar = React.createClass({
               type="text"
               placeholder="Search by Regexp"
               ref="q"
-              autocomplete="off"
-              onKeyDown={this.queryGotKeydown}
-              onFocus={this.queryGotFocus}/>
+              autoComplete="off"
+              onKeyDown={this.queryGotKeydown.bind(this)}
+              onFocus={this.queryGotFocus.bind(this)}/>
           <div className="button-add-on">
-            <button id="dodat" onClick={this.submitQuery}></button>
+            <button id="dodat" onClick={this.submitQuery.bind(this)}></button>
           </div>
         </div>
 
         <div id="inb">
           <div id="adv" ref="adv">
-            <span className="octicon octicon-chevron-up hide-adv" onClick={this.hideAdvanced}></span>
+            <span className="octicon octicon-chevron-up hide-adv" onClick={this.hideAdvanced.bind(this)}></span>
             <div className="field">
               <label htmlFor="files">File Path</label>
               <div className="field-input">
@@ -491,8 +515,8 @@ var SearchBar = React.createClass({
                     id="files"
                     placeholder="regexp"
                     ref="files"
-                    onKeyDown={this.filesGotKeydown}
-                    onFocus={this.filesGotFocus} />
+                    onKeyDown={this.filesGotKeydown.bind(this)}
+                    onFocus={this.filesGotFocus.bind(this)} />
               </div>
             </div>
             <div className="field">
@@ -518,7 +542,7 @@ var SearchBar = React.createClass({
       </div>
     );
   }
-});
+}
 
 /**
  * Take a list of matches and turn it into a simple list of lines.
@@ -632,12 +656,12 @@ var ContentFor = function(line, regexp) {
   return buffer.join('');
 };
 
-var FilesView = React.createClass({
-  onLoadMore: function(event) {
+class FilesView extends React.Component {
+  onLoadMore(event) {
     Model.LoadMore(this.props.repo);
-  },
+  }
 
-  render: function() {
+  render() {
     var rev = this.props.rev,
         repo = this.props.repo,
         regexp = this.props.regexp,
@@ -680,7 +704,7 @@ var FilesView = React.createClass({
 
     var more = '';
     if (matches.length < totalMatches) {
-      more = (<button className="moar" onClick={this.onLoadMore}>Load all {totalMatches} matches in {Model.NameForRepo(repo)}</button>);
+      more = (<button className="moar" onClick={this.onLoadMore.bind(this)}>Load all {totalMatches} matches in {Model.NameForRepo(repo)}</button>);
     }
 
     return (
@@ -690,10 +714,16 @@ var FilesView = React.createClass({
       </div>
     );
   }
-});
+};
 
-var ResultView = React.createClass({
-  componentWillMount: function() {
+class ResultView extends React.Component{
+  constructor(props) {
+    super(props);
+
+    this.state = this.getInitialState();
+  }
+
+  componentWillMount() {
     var _this = this;
     Model.willSearch.tap(function(model, params) {
       _this.setState({
@@ -701,11 +731,13 @@ var ResultView = React.createClass({
         query: params.q
       });
     });
-  },
-  getInitialState: function() {
+  }
+
+  getInitialState() {
     return { results: null };
-  },
-  render: function() {
+  }
+
+  render() {
     if (this.state.error) {
       return (
         <div id="no-result" className="error">
@@ -748,10 +780,10 @@ var ResultView = React.createClass({
       <div id="result">{repos}</div>
     );
   }
-});
+};
 
-var App = React.createClass({
-  componentWillMount: function() {
+class App extends React.Component{
+  componentWillMount() {
     var params = ParamsFromUrl(),
         repos = (params.repos == '') ? [] : params.repos.split(',');
 
@@ -803,20 +835,23 @@ var App = React.createClass({
       _this.refs.searchBar.setParams(params);
       Model.Search(params);
     });
-  },
-  onSearchRequested: function(params) {
+  }
+
+  onSearchRequested(params) {
     this.updateHistory(params);
     Model.Search(this.refs.searchBar.getParams());
-  },
-  updateHistory: function(params) {
+  }
+
+  updateHistory(params) {
     var path = location.pathname +
       '?q=' + encodeURIComponent(params.q) +
       '&i=' + encodeURIComponent(params.i) +
       '&files=' + encodeURIComponent(params.files) +
       '&repos=' + params.repos;
     history.pushState({path:path}, '', path);
-  },
-  render: function() {
+  }
+
+  render() {
     return (
       <div>
         <SearchBar ref="searchBar"
@@ -824,14 +859,14 @@ var App = React.createClass({
             i={this.state.i}
             files={this.state.files}
             repos={this.state.repos}
-            onSearchRequested={this.onSearchRequested} />
+            onSearchRequested={this.onSearchRequested.bind(this)} />
         <ResultView ref="resultView" q={this.state.q} />
       </div>
     );
   }
-});
+};
 
-React.renderComponent(
+render(
   <App />,
   document.getElementById('root')
 );
