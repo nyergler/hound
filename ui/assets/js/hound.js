@@ -131,17 +131,6 @@ var Model = {
       }
     };
 
-    if (typeof ModelData != 'undefined') {
-      var data = JSON.parse(ModelData),
-          repos = {};
-      for (var name in data) {
-        repos[name] = data[name];
-      }
-      this.repos = repos;
-      next();
-      return;
-    }
-
     fetch('api/v1/repos')
     .then((response) => response.json())
     .then((data) => {

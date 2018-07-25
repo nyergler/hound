@@ -84,11 +84,6 @@ func renderForDev(w io.Writer, root string, c *content, cfg *config.Config, r *h
 		return errors.New("invalid tplType for content")
 	}
 
-	json, err := cfg.ToJsonString()
-	if err != nil {
-		return err
-	}
-
 	var buf bytes.Buffer
 	fmt.Fprintf(
 		&buf,
@@ -104,7 +99,6 @@ func renderForDev(w io.Writer, root string, c *content, cfg *config.Config, r *h
 	return c.tpl.Execute(w, map[string]interface{}{
 		"ReactVersion":  ReactVersion,
 		"jQueryVersion": JQueryVersion,
-		"ReposAsJson":   json,
 		"Source":        html_template.HTML(buf.String()),
 		"Host":          r.Host,
 	})
@@ -164,7 +158,6 @@ func renderForPrd(w io.Writer, c *content, cfgJson string, r *http.Request) erro
 	return c.tpl.Execute(w, map[string]interface{}{
 		"ReactVersion":  ReactVersion,
 		"jQueryVersion": JQueryVersion,
-		"ReposAsJson":   cfgJson,
 		"Source":        html_template.HTML(buf.String()),
 		"Host":          r.Host,
 	})
