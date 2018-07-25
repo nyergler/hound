@@ -32,7 +32,7 @@ go get github.com/etsy/hound/cmds/...
 
 1. Create a [config.json](config-example.json) in a directory with your list of repositories.
 
-2. Run 
+2. Run
 ```
 docker run -d -p 6080:6080 --name hound -v $(pwd):/data etsy/hound
 ```
@@ -59,7 +59,7 @@ Yup, that's it. You can proxy requests to the Go service through Apache/nginx/et
 
 Currently Hound is only tested on MacOS and CentOS, but it should work on any *nix system. Hound on Windows is not supported but we've heard it compiles and runs just fine.
 
-Hound supports the following version control systems: 
+Hound supports the following version control systems:
 
 * Git - This is the default
 * Mercurial - use `"vcs" : "hg"` in the config
@@ -74,12 +74,12 @@ There are a couple of ways to get Hound to index private repositories:
 
 * Use the `file://` protocol. This allows you to index a local clone of a repository. The downside here is that the polling to keep the repo up to date will
 not work. (This also doesn't work on local folders that are not of a supported repository type.)
-* Use SSH style URLs in the config: `"url" : "git@github.com:foo/bar.git"`. As long as you have your 
+* Use SSH style URLs in the config: `"url" : "git@github.com:foo/bar.git"`. As long as you have your
 [SSH keys](https://help.github.com/articles/generating-ssh-keys/) set up on the box where Hound is running this will work.
 
 ## Keeping Repos Updated
 
-By default Hound polls the URL in the config for updates every 30 seconds. You can override this value by setting the `ms-between-poll` key on a per repo basis in the config. If you are indexing a large number of repositories, you may also be interested in tweaking the `max-concurrent-indexers` property. You can see how these work in the [example config](config-example.json). 
+By default Hound polls the URL in the config for updates every 30 seconds. You can override this value by setting the `ms-between-poll` key on a per repo basis in the config. If you are indexing a large number of repositories, you may also be interested in tweaking the `max-concurrent-indexers` property. You can see how these work in the [example config](config-example.json).
 
 ## Editor Integration
 
@@ -130,6 +130,13 @@ To make development easier, there is a flag that will read the files from the fi
 
 ```
 bin/houndd --dev
+```
+
+This can be used in conjunction with webpack when developing the frontend:
+
+```
+$ npm run dev &
+$ bin/houndd --dev
 ```
 
 ## Get in Touch
