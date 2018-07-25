@@ -109,8 +109,6 @@ button:focus {
 #adv {
   box-sizing: border-box;
   overflow: hidden;
-  height: 0;
-  padding: 0;
   transition: height, padding 0.1s ease-in-out;
 }
 

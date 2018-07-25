@@ -1,14 +1,10 @@
-import React from 'react';
-import { render } from 'react-dom';
-import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
+import React from 'react';
+import { connect } from 'react-redux';
 
 import { loadRepos, search } from '../actions';
 import RepoOption from './RepoOption.jsx';
-
-var css = function (el, n, v) {
-  el.style.setProperty(n, v, '');
-};
+import Styles from './SearchBar.css';
 
 var FormatNumber = function (t) {
   var s = '' + (t | 0),
@@ -51,6 +47,7 @@ export class SearchBar extends React.Component {
 
   getInitialState() {
     return {
+      advanced: false,
       state: null,
       allRepos: [],
       repos: []
@@ -140,35 +137,8 @@ export class SearchBar extends React.Component {
     return this.refs.files.value.trim() !== '' || this.refs.icase.checked || this.refs.repos.value !== '';
   }
 
-  showAdvanced() {
-    var adv = this.refs.adv,
-      ban = this.refs.ban,
-      q = this.refs.q,
-      files = this.refs.files;
-
-    css(adv, 'height', 'auto');
-    css(adv, 'padding', '10px 0');
-
-    css(ban, 'max-height', '0');
-    css(ban, 'opacity', '0');
-
-    if (q.value.trim() !== '') {
-      files.focus();
-    }
-  }
-
-  hideAdvanced() {
-    var adv = this.refs.adv,
-      ban = this.refs.ban,
-      q = this.refs.q;
-
-    css(adv, 'height', '0');
-    css(adv, 'padding', '0');
-
-    css(ban, 'max-height', '100px');
-    css(ban, 'opacity', '1');
-
-    q.focus();
+  toggleAdvanced() {
+    this.setState({ showAdvanced: !this.state.showAdvanced });
   }
 
   render() {
@@ -220,8 +190,8 @@ export class SearchBar extends React.Component {
         </div>
 
         <div id="inb">
-          <div id="adv" ref="adv">
-            <span className="octicon octicon-chevron-up hide-adv" onClick={this.hideAdvanced.bind(this)}></span>
+          <div id="adv" className={this.state.showAdvanced ? Styles.showAdvanced : Styles.hideAdvanced}>
+            <span className="octicon octicon-chevron-up hide-adv" onClick={this.toggleAdvanced.bind(this)}></span>
             <div className="field">
               <label htmlFor="files">File Path</label>
               <div className="field-input">
@@ -248,7 +218,7 @@ export class SearchBar extends React.Component {
               </div>
             </div>
           </div>
-          <div className="ban" ref="ban" onClick={this.showAdvanced.bind(this)}>
+          <div className="ban" className={this.state.showAdvanced ? Styles.hideBanner : Styles.showBanner} onClick={this.toggleAdvanced.bind(this)}>
             <em>Advanced:</em> ignore case, filter by path, stuff like that.
             </div>
         </div>

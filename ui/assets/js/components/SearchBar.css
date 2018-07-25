@@ -1,0 +1,19 @@
+.hideAdvanced {
+    height: 0;
+    padding: 0;
+}
+
+.showBanner {
+    max-height: 100px;
+    opacity: 1;
+}
+
+.showAdvanced {
+    height: auto;
+    padding: 10px 0;
+}
+
+.hideBanner {
+    max-height: 0;
+    opacity: 0;
+}
