@@ -4,7 +4,6 @@ import { Provider } from 'react-redux';
 import { createStore, applyMiddleware } from 'redux';
 import promiseMiddleware from 'redux-promise';
 import logger from 'redux-logger'
-import { EscapeHtml } from './common';
 import { search } from './actions';
 import searchApp from './reducers.js';
 

@@ -52,6 +52,7 @@ export async function search(params) {
 
         return {
             results,
+            searchParams: params,
             resultsByRepo: byRepo,
             stats: {
                 Server: stats.Duration,

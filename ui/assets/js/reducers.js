@@ -15,6 +15,7 @@ export default function reduce(state = initialState, action) {
         case SEARCH:
             return {
                 ...state,
+                query: action.payload.searchParams.q,
                 ...action.payload
             };
 

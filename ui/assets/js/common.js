@@ -1,15 +1,3 @@
-
-/**
- * Use the DOM to safely htmlify some text.
- */
-export function EscapeHtml(text) {
-    var e = EscapeHtml.e;
-    e.textContent = text;
-    return e.innerHTML;
-  };
-EscapeHtml.e = document.createElement('div');
-
-
 export function ExpandVars(template, values) {
     for (var name in values) {
         template = template.replace('{' + name + '}', values[name]);

@@ -1,7 +1,7 @@
-import React from 'react';
+'use strict';
+
+import React, { Fragment } from 'react';
 import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
-import { EscapeHtml } from '../common';
 
 const UrlToRepo = (repo) => repo;
 const NameForRepo = (repo) => repo;
@@ -18,24 +18,24 @@ const getRegExp = (q, icase) => {
  */
 var ContentFor = function(line, regexp) {
     if (!line.Match) {
-      return EscapeHtml(line.Content);
+      return line.Content;
     }
     var content = line.Content,
         buffer = [];
 
-    while (true) {
+    while (content) {
       regexp.lastIndex = 0;
       var m = regexp.exec(content);
       if (!m) {
-        buffer.push(EscapeHtml(content));
+        buffer.push(content);
         break;
       }
 
-      buffer.push(EscapeHtml(content.substring(0, regexp.lastIndex - m[0].length)));
-      buffer.push( '<em>' + EscapeHtml(m[0]) + '</em>');
+      buffer.push(content.substring(0, regexp.lastIndex - m[0].length));
+      buffer.push( <em>{m[0]}</em>);
       content = content.substring(regexp.lastIndex);
     }
-    return buffer.join('');
+    return <Fragment>{buffer}</Fragment>;
   };
 
 /**
@@ -126,40 +126,40 @@ class FilesView extends React.Component {
           regexp = getRegExp(this.props.regexp),
           matches = this.props.matches,
           totalMatches = this.props.totalMatches;
-    //   var files = matches.map(function(match, index) {
-    //     var filename = match.Filename,
-    //         blocks = CoalesceMatches(match.Matches);
-    //     var matches = blocks.map(function(block) {
-    //       var lines = block.map(function(line) {
-    //         var content = ContentFor(line, regexp);
-    //         return (
-    //           <div className="line">
-    //             <a href={UrlToRepo(repo, filename, line.Number, rev)}
-    //                 className="lnum"
-    //                 target="_blank">{line.Number}</a>
-    //             <span className="lval" dangerouslySetInnerHTML={{__html:content}} />
-    //           </div>
-    //         );
-    //       });
+      var files = matches.map(function(match, index) {
+        var filename = match.Filename,
+            blocks = CoalesceMatches(match.Matches);
+        var matches = blocks.map(function(block) {
+          var lines = block.map(function(line) {
+            var content = ContentFor(line, regexp);
+            return (
+              <div className="line">
+                <a href={UrlToRepo(repo, filename, line.Number, rev)}
+                    className="lnum"
+                    target="_blank">{line.Number}</a>
+                <span className="lval">{content}</span>
+              </div>
+            );
+          });
 
-    //       return (
-    //         <div className="match">{lines}</div>
-    //       );
-    //     });
+          return (
+            <div className="match">{lines}</div>
+          );
+        });
 
-    //     return (
-    //       <div className="file" key={match.Filename}>
-    //         <div className="title">
-    //           <a href={UrlToRepo(repo, match.Filename, null, rev)}>
-    //             {match.Filename}
-    //           </a>
-    //         </div>
-    //         <div className="file-body">
-    //           {matches}
-    //         </div>
-    //       </div>
-    //     );
-    //   });
+        return (
+          <div className="file" key={match.Filename}>
+            <div className="title">
+              <a href={UrlToRepo(repo, match.Filename, null, rev)}>
+                {match.Filename}
+              </a>
+            </div>
+            <div className="file-body">
+              {matches}
+            </div>
+          </div>
+        );
+      });
 
       var more = '';
       if (matches.length < totalMatches) {
@@ -168,6 +168,7 @@ class FilesView extends React.Component {
 
       return (
         <div className="files">
+        {files}
         {more}
         </div>
       );
@@ -179,9 +180,10 @@ const mapDispatchToProps = dispatch => {
     return {}
 }
 
-const mapStateToProps = ({ query, results }) => {
+const mapStateToProps = ({ searchParams, query, results }) => {
     return {
-        query
+      searchParams,
+      query
     }
 }
 

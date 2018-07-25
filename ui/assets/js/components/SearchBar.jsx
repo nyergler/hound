@@ -62,7 +62,7 @@ export class SearchBar extends React.Component {
         this.refs.files.focus();
         break;
       case 38:
-        this.hideAdvanced();
+        this.setState({ advanced: false });
         break;
       case 13:
         this.submitQuery();

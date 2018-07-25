@@ -9,22 +9,7 @@ class ResultView extends React.Component {
         super(props);
 
         this.state = {};
-        // this.state = this.getInitialState();
     }
-
-    // componentWillMount() {
-    //     var _this = this;
-    //     Model.willSearch.tap(function (model, params) {
-    //         _this.setState({
-    //             results: null,
-    //             query: params.q
-    //         });
-    //     });
-    // }
-
-    // getInitialState() {
-    //     return { results: null };
-    // }
 
     render() {
         if (this.state.error) {
@@ -60,6 +45,7 @@ class ResultView extends React.Component {
                     </div>
                     <FilesView matches={result.Matches}
                         rev={result.Rev}
+                        repoName={result.Repo}
                         repo={result.Repo}
                         regexp={regexp}
                         totalMatches={result.FilesWithMatch} />
