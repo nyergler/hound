@@ -33,7 +33,6 @@ class ResultView extends React.Component {
             );
         }
 
-        // Model.NameForRepo(result.Repo)}
         var regexp = this.props.query,
             results = this.props.results || [];
         var repos = results.map(function (result, index) {
@@ -41,7 +40,7 @@ class ResultView extends React.Component {
                 <div className="repo" key={result.Repo}>
                     <div className="title">
                         <span className="mega-octicon octicon-repo"></span>
-                        <span className="name">{result.Repo.Name}</span>
+                        <span className="name">{result.Repo}</span>
                     </div>
                     <FilesView matches={result.Matches}
                         rev={result.Rev}
@@ -70,7 +69,7 @@ const mapDispatchToProps = dispatch => {
 const mapStateToProps = ({ query, results }) => {
     return {
         query,
-        results
+        results,
     }
 }
 

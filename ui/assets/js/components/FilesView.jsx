@@ -2,9 +2,7 @@
 
 import React, { Fragment } from 'react';
 import { connect } from 'react-redux';
-
-const UrlToRepo = (repo) => repo;
-const NameForRepo = (repo) => repo;
+import { UrlToRepo } from '../common';
 
 const getRegExp = (q, icase) => {
     return new RegExp(
@@ -122,7 +120,7 @@ class FilesView extends React.Component {
 
     render() {
       var rev = this.props.rev,
-          repo = this.props.repo,
+          repo = this.props.repos[this.props.repo],
           regexp = getRegExp(this.props.regexp),
           matches = this.props.matches,
           totalMatches = this.props.totalMatches;
@@ -163,7 +161,7 @@ class FilesView extends React.Component {
 
       var more = '';
       if (matches.length < totalMatches) {
-        more = (<button className="moar" onClick={this.onLoadMore.bind(this)}>Load all {totalMatches} matches in {NameForRepo(repo)}</button>);
+        more = (<button className="moar" onClick={this.onLoadMore.bind(this)}>Load all {totalMatches} matches in {repo.Name}</button>);
       }
 
       return (
@@ -180,10 +178,11 @@ const mapDispatchToProps = dispatch => {
     return {}
 }
 
-const mapStateToProps = ({ searchParams, query, results }) => {
+const mapStateToProps = ({ searchParams, query, repos }) => {
     return {
       searchParams,
-      query
+      query,
+      repos,
     }
 }
 
