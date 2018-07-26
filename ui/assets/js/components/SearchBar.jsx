@@ -63,9 +63,9 @@ export class SearchBar extends React.Component {
   }
 
   queryGotFocus(event) {
-    // if (!this.hasAdvancedValues()) {
-    //   this.hideAdvanced();
-    // }
+    if (!this.hasAdvancedValues()) {
+      this.setState({ showAdvanced: false });
+    }
   }
 
   filesGotKeydown(event) {
@@ -173,6 +173,7 @@ export class SearchBar extends React.Component {
             name="q"
             value={this.state.q}
             onChange={this.handleInputChange.bind(this)}
+            onKeyDown={this.queryGotKeydown.bind(this)}
             onFocus={this.queryGotFocus.bind(this)} />
           <div className="button-add-on">
             <button id="dodat" onClick={this.submitQuery.bind(this)}></button>

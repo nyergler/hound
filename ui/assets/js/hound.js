@@ -39,7 +39,7 @@ const ParamsFromUrl = function (params) {
     q: '',
     i: true,
     files: '',
-    repos: '*',
+    repos: '',
   };
   return ParamsFromQueryString(location.search, params);
 };
