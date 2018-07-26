@@ -39,7 +39,7 @@ export class SearchBar extends React.Component {
     this.setParams(this.props);
 
     if (this.hasAdvancedValues()) {
-      this.showAdvanced();
+      // this.showAdvanced();
     }
 
     q.focus();
@@ -71,9 +71,9 @@ export class SearchBar extends React.Component {
   }
 
   queryGotFocus(event) {
-    if (!this.hasAdvancedValues()) {
-      this.hideAdvanced();
-    }
+    // if (!this.hasAdvancedValues()) {
+    //   this.hideAdvanced();
+    // }
   }
 
   filesGotKeydown(event) {
@@ -92,7 +92,7 @@ export class SearchBar extends React.Component {
   }
 
   filesGotFocus(event) {
-    this.showAdvanced();
+    // this.showAdvanced();
   }
 
   submitQuery() {

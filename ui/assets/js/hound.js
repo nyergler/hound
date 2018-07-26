@@ -3,32 +3,32 @@ import { render } from 'react-dom';
 import { Provider } from 'react-redux';
 import { createStore, applyMiddleware } from 'redux';
 import promiseMiddleware from 'redux-promise';
-import logger from 'redux-logger'
+import logger from 'redux-logger';
 import { search } from './actions';
 import searchApp from './reducers.js';
 
 import SearchBar from './components/SearchBar.jsx';
 import ResultView from './components/ResultView.jsx';
 
-import {UrlToRepo} from './common';
+import { UrlToRepo } from './common';
 
-const qs = (params) => Object.keys(params).map(key => key + '=' + params[key]).join('&');
+const qs = params => Object.keys(params).map(key => `${key}=${params[key]}`).join('&');
 
-var Signal = function() {
+const Signal = function () {
 };
 
 Signal.prototype = {
-  listeners : [],
+  listeners: [],
 
-  tap: function(l) {
+  tap(l) {
     // Make a copy of the listeners to avoid the all too common
     // subscribe-during-dispatch problem
     this.listeners = this.listeners.slice(0);
     this.listeners.push(l);
   },
 
-  untap: function(l) {
-    var ix = this.listeners.indexOf(l);
+  untap(l) {
+    const ix = this.listeners.indexOf(l);
     if (ix == -1) {
       return;
     }
@@ -39,23 +39,23 @@ Signal.prototype = {
     this.listeners.splice(ix, 1);
   },
 
-  raise: function() {
-    var args = Array.prototype.slice.call(arguments, 0);
-    this.listeners.forEach(function(l) {
+  raise() {
+    const args = Array.prototype.slice.call(arguments, 0);
+    this.listeners.forEach(function (l) {
       l.apply(this, args);
     });
-  }
+  },
 };
 
-var ParamsFromQueryString = function(qs, params) {
+const ParamsFromQueryString = function (qs, params) {
   params = params || {};
 
   if (!qs) {
     return params;
   }
 
-  qs.substring(1).split('&').forEach(function(v) {
-    var pair = v.split('=');
+  qs.substring(1).split('&').forEach((v) => {
+    const pair = v.split('=');
     if (pair.length != 2) {
       return;
     }
@@ -67,31 +67,31 @@ var ParamsFromQueryString = function(qs, params) {
   return params;
 };
 
-var ParamsFromUrl = function(params) {
+const ParamsFromUrl = function (params) {
   params = params || {
     q: '',
     i: 'nope',
     files: '',
-    repos: '*'
+    repos: '*',
   };
   return ParamsFromQueryString(location.search, params);
 };
 
 
-class App extends React.Component{
+class App extends React.Component {
   componentWillMount() {
-    var params = ParamsFromUrl(),
-        repos = (params.repos == '') ? [] : params.repos.split(',');
+    let params = ParamsFromUrl(),
+      repos = (params.repos == '') ? [] : params.repos.split(',');
 
     this.setState({
       q: params.q,
       i: params.i,
       files: params.files,
-      repos: repos
+      repos,
     });
 
     window.addEventListener('popstate', (e) => {
-      var params = ParamsFromUrl();
+      const params = ParamsFromUrl();
       this.refs.searchBar.setParams(params);
       this.props.dispatch(search(params));
     });
@@ -102,12 +102,12 @@ class App extends React.Component{
   }
 
   updateHistory(params) {
-    var path = location.pathname +
-      '?q=' + encodeURIComponent(params.q) +
-      '&i=' + encodeURIComponent(params.i) +
-      '&files=' + encodeURIComponent(params.files) +
-      '&repos=' + params.repos;
-    history.pushState({path:path}, '', path);
+    const path = `${location.pathname
+    }?q=${encodeURIComponent(params.q)
+    }&i=${encodeURIComponent(params.i)
+    }&files=${encodeURIComponent(params.files)
+    }&repos=${params.repos}`;
+    history.pushState({ path }, '', path);
   }
 
   onSearchRequested(params) {
@@ -118,22 +118,23 @@ class App extends React.Component{
   render() {
     return (
       <div>
-        <SearchBar ref="searchBar"
-            q={this.state.q}
-            i={this.state.i}
-            searchFiles={this.state.files}
-            searchRepos={this.state.repos}
-            onSearch={this.onSearchRequested.bind(this)}
-          />
+        <SearchBar
+          ref="searchBar"
+          q={this.state.q}
+          i={this.state.i}
+          searchFiles={this.state.files}
+          searchRepos={this.state.repos}
+          onSearch={this.onSearchRequested.bind(this)}
+        />
         <ResultView ref="resultView" q={this.state.q} />
       </div>
     );
   }
-};
+}
 
 const store = createStore(
   searchApp,
-  applyMiddleware(promiseMiddleware, logger)
+  applyMiddleware(promiseMiddleware, logger),
 );
 
 render(
@@ -142,5 +143,5 @@ render(
       dispatch={store.dispatch}
     />
   </Provider>,
-  document.getElementById('root')
+  document.getElementById('root'),
 );

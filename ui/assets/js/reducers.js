@@ -1,46 +1,45 @@
 import {
-    LOAD_REPO, SEARCH, LOAD_MORE
+  LOAD_REPO, SEARCH, LOAD_MORE,
 } from './actions';
 
 const initialState = {
-    query: '',
-    repos: {},
-    repoNames: [],
-    results: null
+  query: '',
+  repos: {},
+  repoNames: [],
+  results: null,
 };
 
 export default function reduce(state = initialState, action) {
+  switch (action.type) {
+    case SEARCH:
+      return {
+        ...state,
+        query: action.payload.searchParams.q,
+        ...action.payload,
+      };
 
-    switch (action.type) {
-        case SEARCH:
-            return {
-                ...state,
-                query: action.payload.searchParams.q,
-                ...action.payload
-            };
+    case LOAD_REPO:
+      return {
+        ...state,
+        repoNames: Object.keys(action.payload),
+        repos: action.payload,
+      };
 
-        case LOAD_REPO:
-            return {
-                ...state,
-                repoNames: Object.keys(action.payload),
-                repos: action.payload
-            };
+    case LOAD_MORE:
+      return {
+        ...state,
+        resultsByRepo: {
+          ...state.resultsByRepo,
+          [action.payload.repoName]: {
+            ...state.resultsByRepo[action.payload.repoName],
+            Matches: state.resultsByRepo[action.payload.repoName].Matches.concat(
+              action.payload.results.Matches,
+            ),
+          },
+        },
+      };
 
-        case LOAD_MORE:
-            const repoName = action.payload.repoName;
-            console.log('****', action.payload, state);
-            return {
-                ...state,
-                resultsByRepo: {
-                    ...state.resultsByRepo,
-                    [repoName]: {
-                        ...state.resultsByRepo[repoName],
-                        Matches: state.resultsByRepo[repoName].Matches.concat(action.payload.results.Matches),
-                    },
-                },
-            };
-
-        default:
-            return state;
-    }
+    default:
+      return state;
+  }
 }
