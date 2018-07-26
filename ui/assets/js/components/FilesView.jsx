@@ -31,7 +31,7 @@ var ContentFor = function(line, regexp) {
       }
 
       buffer.push(content.substring(0, regexp.lastIndex - m[0].length));
-      buffer.push( <em>{m[0]}</em>);
+      buffer.push( <em key={buffer.length}>{m[0]}</em>);
       content = content.substring(regexp.lastIndex);
     }
     return <Fragment>{buffer}</Fragment>;
@@ -125,11 +125,11 @@ class FilesView extends React.Component {
       var files = matches.map(function(match, index) {
         var filename = match.Filename,
             blocks = CoalesceMatches(match.Matches);
-        var matches = blocks.map(function(block) {
-          var lines = block.map(function(line) {
+        var matches = blocks.map(function(block, matchIndex) {
+          var lines = block.map(function(line, lineIndex) {
             var content = ContentFor(line, regexp);
             return (
-              <div className="line">
+              <div className="line" key={`${match.Filename}-${lineIndex}`}>
                 <a href={UrlToRepo(repo, filename, line.Number, rev)}
                     className="lnum"
                     target="_blank">{line.Number}</a>
@@ -139,7 +139,7 @@ class FilesView extends React.Component {
           });
 
           return (
-            <div className="match">{lines}</div>
+            <div className="match" key={`${match.Filename}-${matchIndex}`}>{lines}</div>
           );
         });
 
