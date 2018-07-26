@@ -37,7 +37,7 @@ const ParamsFromQueryString = function (qs, params) {
 const ParamsFromUrl = function (params) {
   params = params || {
     q: '',
-    i: 'nope',
+    i: true,
     files: '',
     repos: '*',
   };
@@ -52,7 +52,7 @@ class App extends React.Component {
 
     this.setState({
       q: params.q,
-      i: params.i,
+      i: params.i === 'true',
       files: params.files,
       repos,
     });

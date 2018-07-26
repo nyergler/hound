@@ -25,32 +25,21 @@ export class SearchBar extends React.Component {
 
   constructor(props) {
     super(props);
-    this.state = this.getInitialState();
+    this.state = this.getInitialState(props);
   }
 
   componentDidMount() {
     this.props.loadRepositories();
-
-    var q = this.refs.q;
-
-    // TODO(knorton): Can't set this in jsx
-    q.setAttribute('autocomplete', 'off');
-
-    this.setParams(this.props);
-
-    if (this.hasAdvancedValues()) {
-      // this.showAdvanced();
-    }
-
-    q.focus();
   }
 
-  getInitialState() {
+  getInitialState(props) {
     return {
       advanced: false,
-      state: null,
       allRepos: [],
-      repos: []
+      repos: props.searchRepos || [],
+      q: props.q,
+      icase: props.i,
+      files: props.searchFiles,
     };
   }
 
@@ -59,7 +48,7 @@ export class SearchBar extends React.Component {
       case 40:
         // this will cause advanced to expand if it is not expanded.
         React.findDOMNode(files).focus();
-        this.refs.files.focus();
+        // this.refs.files.focus();
         break;
       case 38:
         this.setState({ advanced: false });
@@ -80,7 +69,7 @@ export class SearchBar extends React.Component {
     switch (event.keyCode) {
       case 38:
         // if advanced is empty, close it up.
-        if (this.refs.files.value.trim() === '') {
+        if (event.target.value.trim() === '') {
           this.hideAdvanced();
         }
         this.refs.q.focus();
@@ -91,18 +80,8 @@ export class SearchBar extends React.Component {
     }
   }
 
-  filesGotFocus(event) {
-    // this.showAdvanced();
-  }
-
   submitQuery() {
     this.props.onSearch(this.getParams());
-  }
-
-  getRegExp() {
-    return new RegExp(
-      this.refs.q.value.trim(),
-      this.refs.icase.checked ? 'ig' : 'g');
   }
 
   getParams() {
@@ -111,25 +90,39 @@ export class SearchBar extends React.Component {
     var repos = [];
 
     return {
-      q: this.refs.q.value.trim(),
-      files: this.refs.files.value.trim(),
-      repos: repos.join(','),
-      i: this.refs.icase.checked ? 'fosho' : 'nope'
+      q: this.state.q,
+      files: this.state.files.trim(),
+      repos: this.state.repos.join(','),
+      i: this.state.icase,
     };
   }
 
-  setParams(params) {
-    var q = this.refs.q,
-      i = this.refs.icase,
-      files = this.refs.files;
 
-    q.value = params.q;
-    i.checked = ParamValueToBool(params.i);
-    files.value = params.files;
+  handleInputChange(event) {
+    const target = event.target;
+    let value = target.value;
+    const name = target.name;
+
+    switch (target.type) {
+      case 'checkbox':
+        value = target.checked
+        break;
+
+      case 'select-multiple':
+        value = [].slice.call(target.selectedOptions).map((o) => o.value);
+        break;
+
+      default:
+        break;
+    }
+
+    this.setState({
+      [name]: value
+    });
   }
 
   hasAdvancedValues() {
-    return this.refs.files.value.trim() !== '' || this.refs.icase.checked || this.refs.repos.value !== '';
+    return this.state.files.trim() !== '' || this.state.icase || this.state.repos.length > 0;
   }
 
   toggleAdvanced() {
@@ -138,15 +131,12 @@ export class SearchBar extends React.Component {
 
   render() {
     var repoCount = this.props.repos.length,
-      repoOptions = [],
-      selected = {};
-
-    this.state.repos.forEach(function (repo) {
-      selected[repo] = true;
-    });
+      repoOptions = [];
 
     this.props.repoNames.forEach(function (repoName) {
-      repoOptions.push(<RepoOption key={repoName} value={repoName} selected={selected[repoName]} />);
+      repoOptions.push(
+        <option key={repoName} value={repoName}>{repoName}</option>
+      );
     });
 
     var stats = this.props.stats;
@@ -177,7 +167,9 @@ export class SearchBar extends React.Component {
             placeholder="Search by Regexp"
             ref="q"
             autoComplete="off"
-            onKeyDown={this.queryGotKeydown.bind(this)}
+            name="q"
+            value={this.state.q}
+            onChange={this.handleInputChange.bind(this)}
             onFocus={this.queryGotFocus.bind(this)} />
           <div className="button-add-on">
             <button id="dodat" onClick={this.submitQuery.bind(this)}></button>
@@ -192,22 +184,25 @@ export class SearchBar extends React.Component {
               <div className="field-input">
                 <input type="text"
                   id="files"
+                  name="files"
                   placeholder="regexp"
-                  ref="files"
-                  onKeyDown={this.filesGotKeydown.bind(this)}
-                  onFocus={this.filesGotFocus.bind(this)} />
+                  value={this.state.files}
+                  onChange={this.handleInputChange.bind(this)} />
               </div>
             </div>
             <div className="field">
               <label htmlFor="ignore-case">Ignore Case</label>
               <div className="field-input">
-                <input id="ignore-case" type="checkbox" ref="icase" />
+                <input id="ignore-case" type="checkbox" name="icase" checked={this.state.icase} onChange={this.handleInputChange.bind(this)} />
               </div>
             </div>
             <div className="field">
               <label className="multiselect_label" htmlFor="repos">Select Repo</label>
               <div className="field-input">
-                <select id="repos" className="form-control multiselect" multiple={true} size={Math.min(16, repoCount)} ref="repos">
+                <select id="repos" name="repos" className="form-control multiselect" multiple={true}
+                  onChange={this.handleInputChange.bind(this)}
+                  value={this.state.repos}
+                  size={Math.min(16, repoCount)}>
                   {repoOptions}
                 </select>
               </div>
@@ -225,6 +220,10 @@ export class SearchBar extends React.Component {
 
 SearchBar.propTypes = {
   onSearch: PropTypes.func.isRequired,
+  searchFiles: PropTypes.string,
+  i: PropTypes.bool,
+  q: PropTypes.string,
+  searchRepos: PropTypes.arrayOf(PropTypes.string),
 };
 
 const mapDispatchToProps = dispatch => {
