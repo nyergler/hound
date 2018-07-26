@@ -1,10 +1,10 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import { connect } from 'react-redux';
-
 import { loadRepos, search } from '../actions';
 import RepoOption from './RepoOption.jsx';
 import Styles from './SearchBar.css';
+
 
 var FormatNumber = function (t) {
   var s = '' + (t | 0),
@@ -106,13 +106,8 @@ export class SearchBar extends React.Component {
   }
 
   getParams() {
-    // selecting all repos is the same as not selecting any, so normalize the url
+    // XXX selecting all repos is the same as not selecting any, so normalize the url
     // to have none.
-    // var repos = Model.ValidRepos(this.refs.repos.state);
-    // if (repos.length == Model.RepoCount()) {
-    //   repos = [];
-    // }
-    console.log(this.refs.repos.state);
     var repos = [];
 
     return {
@@ -235,7 +230,6 @@ SearchBar.propTypes = {
 const mapDispatchToProps = dispatch => {
   return {
     loadRepositories: () => dispatch(loadRepos()),
-    onSearch: params => dispatch(search(params))
   }
 }
 

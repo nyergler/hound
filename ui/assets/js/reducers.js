@@ -1,5 +1,5 @@
 import {
-    LOAD_REPO, SEARCH
+    LOAD_REPO, SEARCH, LOAD_MORE
 } from './actions';
 
 const initialState = {
@@ -24,6 +24,20 @@ export default function reduce(state = initialState, action) {
                 ...state,
                 repoNames: Object.keys(action.payload),
                 repos: action.payload
+            };
+
+        case LOAD_MORE:
+            const repoName = action.payload.repoName;
+            console.log('****', action.payload, state);
+            return {
+                ...state,
+                resultsByRepo: {
+                    ...state.resultsByRepo,
+                    [repoName]: {
+                        ...state.resultsByRepo[repoName],
+                        Matches: state.resultsByRepo[repoName].Matches.concat(action.payload.results.Matches),
+                    },
+                },
             };
 
         default:

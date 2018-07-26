@@ -1,8 +1,8 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
-
 import FilesView from './FilesView.jsx';
+
 
 class ResultView extends React.Component {
     constructor(props) {
@@ -35,14 +35,15 @@ class ResultView extends React.Component {
 
         var regexp = this.props.query,
             results = this.props.results || [];
-        var repos = results.map(function (result, index) {
+        var repos = results.map((result, index) => {
             return (
                 <div className="repo" key={result.Repo}>
                     <div className="title">
                         <span className="mega-octicon octicon-repo"></span>
                         <span className="name">{result.Repo}</span>
                     </div>
-                    <FilesView matches={result.Matches}
+                    <FilesView
+                        matches={this.props.resultsByRepo[result.Repo].Matches}
                         rev={result.Rev}
                         repoName={result.Repo}
                         repo={result.Repo}
@@ -66,10 +67,11 @@ const mapDispatchToProps = dispatch => {
     return {}
 }
 
-const mapStateToProps = ({ query, results }) => {
+const mapStateToProps = ({ query, results, resultsByRepo }) => {
     return {
         query,
         results,
+        resultsByRepo,
     }
 }
 

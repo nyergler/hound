@@ -3,6 +3,7 @@
 import React, { Fragment } from 'react';
 import { connect } from 'react-redux';
 import { UrlToRepo } from '../common';
+import { loadMore } from '../actions';
 
 const getRegExp = (q, icase) => {
     return new RegExp(
@@ -114,9 +115,6 @@ var CoalesceMatches = function(matches) {
   };
 
 class FilesView extends React.Component {
-    onLoadMore(event) {
-      Model.LoadMore(this.props.repo);
-    }
 
     render() {
       var rev = this.props.rev,
@@ -161,7 +159,11 @@ class FilesView extends React.Component {
 
       var more = '';
       if (matches.length < totalMatches) {
-        more = (<button className="moar" onClick={this.onLoadMore.bind(this)}>Load all {totalMatches} matches in {repo.Name}</button>);
+        more = (
+        <button
+          className="moar"
+          onClick={() => this.props.onLoadMore(this.props.repoName, matches.length, totalMatches, this.props.searchParams)}
+        >Load all {totalMatches} matches in {this.props.repoName}</button>);
       }
 
       return (
@@ -174,8 +176,10 @@ class FilesView extends React.Component {
   };
 
 
-const mapDispatchToProps = dispatch => {
-    return {}
+const mapDispatchToProps = (dispatch) => {
+    return {
+      onLoadMore: (repoName, numLoaded, total, searchParams) => dispatch(loadMore(repoName, numLoaded, total, searchParams)),
+    }
 }
 
 const mapStateToProps = ({ searchParams, query, repos }) => {
@@ -187,5 +191,6 @@ const mapStateToProps = ({ searchParams, query, repos }) => {
 }
 
 export default connect(
-    mapStateToProps
+    mapStateToProps,
+    mapDispatchToProps
 )(FilesView);

@@ -78,58 +78,6 @@ var ParamsFromUrl = function(params) {
 };
 
 
-/**
- * The data model for the UI is responsible for conducting searches and managing
- * all results.
- */
-var Model = {
-  // raised when a search begins
-  willSearch: new Signal(),
-
-  // raised when a search completes
-  didSearch: new Signal(),
-
-  willLoadMore: new Signal(),
-
-  didLoadMore: new Signal(),
-
-  didError: new Signal(),
-
-  LoadMore: function(repo) {
-    var _this = this,
-        results = this.resultsByRepo[repo],
-        numLoaded = results.Matches.length,
-        numNeeded = results.FilesWithMatch - numLoaded,
-        numToLoad = Math.min(2000, numNeeded),
-        endAt = numNeeded == numToLoad ? '' : '' + numToLoad;
-
-    _this.willLoadMore.raise(this, repo, numLoaded, numNeeded, numToLoad);
-
-    const params = {
-      ...this.params,
-      rng: numLoaded+':'+endAt,
-      repos: repo
-    };
-
-    fetch(`api/v1/search?${qs(params)}`)
-    .then((response) => response.json())
-    .then((data) => {
-      if (data.Error) {
-        _this.didError.raise(_this, data.Error);
-        return;
-      }
-
-      var result = data.Results[repo];
-      results.Matches = results.Matches.concat(result.Matches);
-      _this.didLoadMore.raise(_this, repo, _this.results);
-    })
-    .catch(() => _this.didError.raise(this, "The server broke down"));
-  },
-
-};
-
-
-
 class App extends React.Component{
   componentWillMount() {
     var params = ParamsFromUrl(),
