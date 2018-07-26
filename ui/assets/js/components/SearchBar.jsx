@@ -30,6 +30,9 @@ export class SearchBar extends React.Component {
 
   componentDidMount() {
     this.props.loadRepositories();
+    if (this.props.q) {
+      this.props.onSearch(this.getParams());
+    }
   }
 
   getInitialState(props) {

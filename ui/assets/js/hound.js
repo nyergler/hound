@@ -47,8 +47,18 @@ const ParamsFromUrl = function (params) {
 
 class App extends React.Component {
   componentWillMount() {
-    let params = ParamsFromUrl(),
-      repos = (params.repos == '') ? [] : params.repos.split(',');
+    const params = ParamsFromUrl();
+    this.setStateFromParams(params);
+
+    window.addEventListener('popstate', (e) => {
+      const params = ParamsFromUrl();
+      this.setStateFromParams(params);
+      this.props.dispatch(search(params));
+    });
+  }
+
+  setStateFromParams(params) {
+    const repos = (params.repos == '') ? [] : params.repos.split(',');
 
     this.setState({
       q: params.q,
@@ -56,16 +66,6 @@ class App extends React.Component {
       files: params.files,
       repos,
     });
-
-    window.addEventListener('popstate', (e) => {
-      const params = ParamsFromUrl();
-      this.refs.searchBar.setParams(params);
-      this.props.dispatch(search(params));
-    });
-
-    if (params.q) {
-      this.props.dispatch(search(params));
-    }
   }
 
   updateHistory(params) {
@@ -86,14 +86,13 @@ class App extends React.Component {
     return (
       <div>
         <SearchBar
-          ref="searchBar"
           q={this.state.q}
           i={this.state.i}
           searchFiles={this.state.files}
           searchRepos={this.state.repos}
           onSearch={this.onSearchRequested.bind(this)}
         />
-        <ResultView ref="resultView" q={this.state.q} />
+        <ResultView q={this.state.q} />
       </div>
     );
   }
