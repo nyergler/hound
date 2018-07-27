@@ -10,10 +10,6 @@ import searchApp from './reducers.js';
 import SearchBar from './components/SearchBar.jsx';
 import ResultView from './components/ResultView.jsx';
 
-import { UrlToRepo } from './common';
-
-const qs = params => Object.keys(params).map(key => `${key}=${params[key]}`).join('&');
-
 const ParamsFromQueryString = function (qs, params) {
   params = params || {};
 
@@ -62,7 +58,7 @@ class App extends React.Component {
 
     this.setState({
       q: params.q,
-      i: params.i === 'true',
+      i: params.i === 'true' || params.i === true,
       files: params.files,
       repos,
     });
@@ -92,7 +88,7 @@ class App extends React.Component {
           searchRepos={this.state.repos}
           onSearch={this.onSearchRequested.bind(this)}
         />
-        <ResultView q={this.state.q} />
+        <ResultView />
       </div>
     );
   }

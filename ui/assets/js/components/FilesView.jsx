@@ -1,9 +1,10 @@
 'use strict';
 
+import PropTypes from 'prop-types';
 import React, { Fragment } from 'react';
 import { connect } from 'react-redux';
-import { UrlToRepo } from '../common';
 import { loadMore } from '../actions';
+import { UrlToRepo } from '../common';
 
 const getRegExp = (q, icase) => {
     return new RegExp(
@@ -119,7 +120,7 @@ class FilesView extends React.Component {
     render() {
       var rev = this.props.rev,
           repo = this.props.repos[this.props.repo],
-          regexp = getRegExp(this.props.regexp),
+          regexp = getRegExp(this.props.regexp, this.props.searchParams.i),
           matches = this.props.matches,
           totalMatches = this.props.totalMatches;
       var files = matches.map(function(match, index) {
@@ -175,6 +176,10 @@ class FilesView extends React.Component {
     }
   };
 
+FilesView.propTypes = {
+  query: PropTypes.string,
+  searchParams: PropTypes.object,
+};
 
 const mapDispatchToProps = (dispatch) => {
     return {
