@@ -38,83 +38,6 @@ var ContentFor = function(line, regexp) {
     return <Fragment>{buffer}</Fragment>;
   };
 
-/**
- * Take a list of matches and turn it into a simple list of lines.
- */
-var MatchToLines = function(match) {
-    var lines = [],
-        base = match.LineNumber,
-        nBefore = match.Before.length,
-        nAfter = match.After.length;
-    match.Before.forEach(function(line, index) {
-      lines.push({
-        Number : base - nBefore + index,
-        Content: line,
-        Match: false
-      });
-    });
-
-    lines.push({
-      Number: base,
-      Content: match.Line,
-      Match: true
-    });
-
-    match.After.forEach(function(line, index) {
-      lines.push({
-        Number: base + index + 1,
-        Content: line,
-        Match: false
-      });
-    });
-
-    return lines;
-  };
-
-/**
- * Take several lists of lines each representing a matching block and merge overlapping
- * blocks together. A good example of this is when you have a match on two consecutive
- * lines. We will merge those into a singular block.
- *
- * TODO(knorton): This code is a bit skanky. I wrote it while sleepy. It can surely be
- * made simpler.
- */
-var CoalesceMatches = function(matches) {
-    var blocks = matches.map(MatchToLines),
-        res = [],
-        current;
-    // go through each block of lines and see if it overlaps
-    // with the previous.
-    for (var i = 0, n = blocks.length; i < n; i++) {
-      var block = blocks[i],
-          max = current ? current[current.length - 1].Number : -1;
-      // if the first line in the block is before the last line in
-      // current, we'll be merging.
-      if (block[0].Number <= max) {
-        block.forEach(function(line) {
-          if (line.Number > max) {
-            current.push(line);
-          } else if (current && line.Match) {
-            // we have to go back into current and make sure that matches
-            // are properly marked.
-            current[current.length - 1 - (max - line.Number)].Match = true;
-          }
-        });
-      } else {
-        if (current) {
-          res.push(current);
-        }
-        current = block;
-      }
-    }
-
-    if (current) {
-      res.push(current);
-    }
-
-    return res;
-  };
-
 class FilesView extends React.Component {
 
     render() {
@@ -123,36 +46,34 @@ class FilesView extends React.Component {
           regexp = getRegExp(this.props.regexp, this.props.searchParams.i),
           matches = this.props.matches,
           totalMatches = this.props.totalMatches;
-      var files = matches.map(function(match, index) {
-        var filename = match.Filename,
-            blocks = CoalesceMatches(match.Matches);
-        var matches = blocks.map(function(block, matchIndex) {
-          var lines = block.map(function(line, lineIndex) {
-            var content = ContentFor(line, regexp);
+
+      const files = this.props.matches.map((fileMatch, index) => {
+        const blocks = fileMatch.Matches.map((matchBlock, j) => {
+          const matchLines = matchBlock.Lines.map((line, k) => {
             return (
-              <div className="line" key={`${match.Filename}-${lineIndex}`}>
-                <a href={UrlToRepo(repo, filename, line.Number, rev)}
-                    className="lnum"
-                    target="_blank">{line.Number}</a>
-                <span className="lval">{content}</span>
-              </div>
+              <div className="line" key={`${fileMatch.Filename}-${line.Number}`}>
+              <a href={UrlToRepo(repo, fileMatch.Filename, line.Number, rev)}
+                  className="lnum"
+                  target="_blank">{line.Number}</a>
+              <span className="lval">{ContentFor(line, regexp)}</span>
+            </div>
             );
           });
 
           return (
-            <div className="match" key={`${match.Filename}-${matchIndex}`}>{lines}</div>
-          );
+            <div className="match" key={`${fileMatch.Filename}-${j}`}>{matchLines}</div>
+          )
         });
 
         return (
-          <div className="file" key={match.Filename}>
+          <div className="file" key={fileMatch.Filename}>
             <div className="title">
-              <a href={UrlToRepo(repo, match.Filename, null, rev)}>
-                {match.Filename}
+              <a href={UrlToRepo(repo, fileMatch.Filename, null, rev)}>
+                {fileMatch.Filename}
               </a>
             </div>
             <div className="file-body">
-              {matches}
+              {blocks}
             </div>
           </div>
         );

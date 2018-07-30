@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -48,6 +49,105 @@ type searchResponse struct {
 	repo string
 	res  *index.SearchResponse
 	err  error
+}
+
+func coalesceMatches(matches *index.SearchResponse) *SearchResponse {
+
+	var coalesced []*FileMatch
+	var lines map[int]*MatchLine
+	var lineNums []int
+	var lineNum int
+
+	for _, matchedFile := range matches.Matches {
+		lines = make(map[int]*MatchLine)
+		var merged []*MatchBlock
+
+		// extract all the lines
+		for _, match := range matchedFile.Matches {
+			for i, l := range match.Before {
+				lineNum = match.LineNumber - len(match.Before) + i
+				existing, ok := lines[lineNum]
+				lines[lineNum] = &MatchLine{l, lineNum, (ok && existing.Match)}
+			}
+
+			lines[match.LineNumber] = &MatchLine{match.Line, match.LineNumber, true}
+
+			for i, l := range match.After {
+				lineNum = match.LineNumber + i + 1
+				existing, ok := lines[lineNum]
+				lines[lineNum] = &MatchLine{l, lineNum, ok && existing.Match}
+			}
+		}
+
+		lineNums = make([]int, 0, len(lines))
+		for k := range lines {
+			lineNums = append(lineNums, k)
+		}
+		sort.Ints(lineNums)
+
+		// chunk them into blocks
+		var block *MatchBlock
+		prevLine := -5
+		for _, lineNum := range lineNums {
+			if lineNum > prevLine+1 {
+				if block != nil {
+					merged = append(merged, block)
+				}
+				block = &MatchBlock{}
+			}
+
+			block.Lines = append(block.Lines, lines[lineNum])
+			if lines[lineNum].Match {
+				block.MatchCount++
+			}
+			prevLine = lineNum
+		}
+		if block != nil {
+			merged = append(merged, block)
+		}
+		coalesced = append(coalesced, &FileMatch{matchedFile.Filename, merged})
+	}
+
+	return &SearchResponse{
+		coalesced,
+		matches.FilesWithMatch,
+		matches.FilesOpened,
+		matches.Duration,
+		matches.Revision,
+	}
+}
+
+func coalesceRepoMatches(results *map[string]*index.SearchResponse) map[string]*SearchResponse {
+
+	res := map[string]*SearchResponse{}
+
+	for repo, results := range *results {
+		res[repo] = coalesceMatches(results)
+	}
+	return res
+}
+
+type MatchLine struct {
+	Content string
+	Number  int
+	Match   bool
+}
+
+type MatchBlock struct {
+	MatchCount int
+	Lines      []*MatchLine
+}
+
+type FileMatch struct {
+	Filename string
+	Matches  []*MatchBlock
+}
+type SearchResponse struct {
+	Matches        []*FileMatch
+	FilesWithMatch int
+	FilesOpened    int           `json:"-"`
+	Duration       time.Duration `json:"-"`
+	Revision       string
 }
 
 /**
@@ -197,10 +297,51 @@ func Setup(m *http.ServeMux, idx map[string]*searcher.Searcher) {
 
 		var res struct {
 			Results map[string]*index.SearchResponse
-			Stats   *Stats `json:",omitempty"`
+			Stats   *Stats
 		}
 
 		res.Results = results
+		if stats {
+			res.Stats = &Stats{
+				FilesOpened: filesOpened,
+				Duration:    durationMs,
+			}
+		}
+
+		writeResp(w, &res)
+	})
+
+	m.HandleFunc("/api/v2/search", func(w http.ResponseWriter, r *http.Request) {
+		var opt index.SearchOptions
+
+		stats := parseAsBool(r.FormValue("stats"))
+		repos := parseAsRepoList(r.FormValue("repos"), idx)
+		query := r.FormValue("q")
+		opt.Offset, opt.Limit = parseRangeValue(r.FormValue("rng"))
+		opt.FileRegexp = r.FormValue("files")
+		opt.IgnoreCase = parseAsBool(r.FormValue("i"))
+		opt.LinesOfContext = parseAsUintValue(
+			r.FormValue("ctx"),
+			0,
+			maxLinesOfContext,
+			defaultLinesOfContext)
+
+		var filesOpened int
+		var durationMs int
+
+		results, err := searchAll(query, &opt, repos, idx, &filesOpened, &durationMs)
+		if err != nil {
+			// TODO(knorton): Return ok status because the UI expects it for now.
+			writeError(w, err, http.StatusOK)
+			return
+		}
+
+		var res struct {
+			Results map[string]*SearchResponse
+			Stats   *Stats
+		}
+		res.Results = coalesceRepoMatches(&results)
+
 		if stats {
 			res.Stats = &Stats{
 				FilesOpened: filesOpened,

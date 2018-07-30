@@ -19,7 +19,7 @@ export async function search(params) {
     params.repos = '*';
   }
 
-  return fetch(`api/v1/search?${qs(params)}`)
+  return fetch(`api/v2/search?${qs(params)}`)
     .then(response => response.json())
     .then((data) => {
       let matches = data.Results,
