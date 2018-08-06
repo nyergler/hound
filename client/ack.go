@@ -76,7 +76,7 @@ func (p *ackPresenter) Present(
 				return err
 			}
 
-			blocks := coalesceMatches(file.Matches)
+			blocks := CoalesceMatches(file.Matches)
 
 			for _, block := range blocks {
 				for i, n := 0, len(block.Lines); i < n; i++ {

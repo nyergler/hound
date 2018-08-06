@@ -5,9 +5,11 @@ import (
 )
 
 type Block struct {
-	Lines   []string
-	Matches []bool
-	Start   int
+	Lines      []string `json:"-"`
+	Matches    []bool   `json:"-"`
+	Start      int
+	MatchCount int
+	BlockLines []*index.MatchLine `json:"Lines"`
 }
 
 func endOfBlock(b *Block) int {
@@ -26,24 +28,45 @@ func matchToBlock(m *index.Match) *Block {
 	b, a := len(m.Before), len(m.After)
 	n := 1 + b + a
 	l := make([]string, 0, n)
+	bl := make([]*index.MatchLine, 0, n)
 	v := make([]bool, n)
 
 	v[b] = true
 
-	for _, line := range m.Before {
+	for i, line := range m.Before {
 		l = append(l, line)
+		bl = append(bl, &index.MatchLine{
+			Line:          line,
+			FormattedLine: line,
+			Match:         false,
+			LineNum:       m.LineNumber - len(m.Before) + i,
+		})
 	}
 
 	l = append(l, m.Line)
+	bl = append(bl, &index.MatchLine{
+		Line:          m.Line,
+		FormattedLine: m.Line,
+		Match:         true,
+		LineNum:       m.LineNumber,
+	})
 
-	for _, line := range m.After {
+	for i, line := range m.After {
 		l = append(l, line)
+		bl = append(bl, &index.MatchLine{
+			Line:          line,
+			FormattedLine: line,
+			Match:         false,
+			LineNum:       m.LineNumber + i + 1,
+		})
 	}
 
 	return &Block{
-		Lines:   l,
-		Matches: v,
-		Start:   m.LineNumber - len(m.Before),
+		Lines:      l,
+		Matches:    v,
+		Start:      m.LineNumber - len(m.Before),
+		MatchCount: 1,
+		BlockLines: bl,
 	}
 }
 
@@ -77,7 +100,7 @@ func mergeMatchIntoBlock(m *index.Match, b *Block) {
 	}
 }
 
-func coalesceMatches(matches []*index.Match) []*Block {
+func CoalesceMatches(matches []*index.Match) []*Block {
 	var res []*Block
 	var curr *Block
 	for _, match := range matches {

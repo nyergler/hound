@@ -73,7 +73,7 @@ func assertBlockSlicesAreSame(t *testing.T, a, b []*Block) bool {
 }
 
 func testThis(t *testing.T, subj []*index.Match, expt []*Block, desc string) {
-	if !assertBlockSlicesAreSame(t, expt, coalesceMatches(subj)) {
+	if !assertBlockSlicesAreSame(t, expt, CoalesceMatches(subj)) {
 		t.Errorf("case failed: %s", desc)
 	}
 }

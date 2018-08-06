@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/etsy/hound/client"
 	"github.com/etsy/hound/config"
 	"github.com/etsy/hound/index"
 	"github.com/etsy/hound/searcher"
@@ -54,58 +54,15 @@ type searchResponse struct {
 func coalesceMatches(matches *index.SearchResponse) *SearchResponse {
 
 	var coalesced []*FileMatch
-	var lines map[int]*MatchLine
-	var lineNums []int
-	var lineNum int
 
 	for _, matchedFile := range matches.Matches {
-		lines = make(map[int]*MatchLine)
-		var merged []*MatchBlock
-
-		// extract all the lines
-		for _, match := range matchedFile.Matches {
-			for i, l := range match.Before {
-				lineNum = match.LineNumber - len(match.Before) + i
-				existing, ok := lines[lineNum]
-				lines[lineNum] = &MatchLine{l, lineNum, (ok && existing.Match)}
-			}
-
-			lines[match.LineNumber] = &MatchLine{match.Line, match.LineNumber, true}
-
-			for i, l := range match.After {
-				lineNum = match.LineNumber + i + 1
-				existing, ok := lines[lineNum]
-				lines[lineNum] = &MatchLine{l, lineNum, ok && existing.Match}
-			}
-		}
-
-		lineNums = make([]int, 0, len(lines))
-		for k := range lines {
-			lineNums = append(lineNums, k)
-		}
-		sort.Ints(lineNums)
-
-		// chunk them into blocks
-		var block *MatchBlock
-		prevLine := -5
-		for _, lineNum := range lineNums {
-			if lineNum > prevLine+1 {
-				if block != nil {
-					merged = append(merged, block)
-				}
-				block = &MatchBlock{}
-			}
-
-			block.Lines = append(block.Lines, lines[lineNum])
-			if lines[lineNum].Match {
-				block.MatchCount++
-			}
-			prevLine = lineNum
-		}
-		if block != nil {
-			merged = append(merged, block)
-		}
-		coalesced = append(coalesced, &FileMatch{matchedFile.Filename, merged})
+		coalesced = append(
+			coalesced,
+			&FileMatch{
+				matchedFile.Filename,
+				client.CoalesceMatches(matchedFile.Matches),
+			},
+		)
 	}
 
 	return &SearchResponse{
@@ -127,20 +84,9 @@ func coalesceRepoMatches(results *map[string]*index.SearchResponse) map[string]*
 	return res
 }
 
-type MatchLine struct {
-	Content string
-	Number  int
-	Match   bool
-}
-
-type MatchBlock struct {
-	MatchCount int
-	Lines      []*MatchLine
-}
-
 type FileMatch struct {
 	Filename string
-	Matches  []*MatchBlock
+	Matches  []*client.Block
 }
 type SearchResponse struct {
 	Matches        []*FileMatch

@@ -48,11 +48,19 @@ type SearchOptions struct {
 	Limit          int
 }
 
+type MatchLine struct {
+	Line          string `json:"Content"`
+	FormattedLine string `json:"formatted"`
+	Match         bool
+	LineNum       int `json:"Number"`
+}
+
 type Match struct {
-	Line       string
-	LineNumber int
-	Before     []string
-	After      []string
+	Line         string
+	LineNumber   int
+	Before       []string
+	After        []string
+	MatchedLines []*MatchLine
 }
 
 type SearchResponse struct {
@@ -188,11 +196,27 @@ func (n *Index) Search(pat string, opt *SearchOptions) (*SearchResponse, error) 
 				}
 
 				matchesCollected++
+				tmpMatchLines := make([]*MatchLine, len(before)+len(after)+1)
+				for i, l := range toStrings(before) {
+					tmpMatchLines[i] = &MatchLine{
+						l, "", false, lineno - len(before) + i,
+					}
+				}
+				tmpMatchLines[len(before)] = &MatchLine{
+					string(line), "", true, lineno,
+				}
+				for i, l := range toStrings(after) {
+					tmpMatchLines[len(before)+i+1] = &MatchLine{
+						l, "", false, lineno + i + 1,
+					}
+				}
+
 				matches = append(matches, &Match{
-					Line:       string(line),
-					LineNumber: lineno,
-					Before:     toStrings(before),
-					After:      toStrings(after),
+					Line:         string(line),
+					LineNumber:   lineno,
+					Before:       toStrings(before),
+					After:        toStrings(after),
+					MatchedLines: tmpMatchLines,
 				})
 
 				if matchesCollected > matchLimit {
