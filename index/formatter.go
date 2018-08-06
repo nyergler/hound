@@ -1,10 +1,12 @@
-package api
+package index
 
 import (
+	"compress/gzip"
 	"fmt"
 	"html"
 	"io"
 	"io/ioutil"
+	"os"
 	"sort"
 	"strings"
 
@@ -16,21 +18,25 @@ import (
 // Option sets an option of the HTML formatter.
 type Option func(f *Formatter)
 
-func formatFile(filename string) *[]string {
+func FormatFile(filename string) []string {
 
 	var formattedLines *[]string
-	someSourceCode, _ := ioutil.ReadFile(filename)
+
+	f, _ := os.Open(filename)
+	gf, _ := gzip.NewReader(f)
+	someSourceCode, _ := ioutil.ReadAll(gf)
+	// ioutil.ReadFile(filename)
 	lexer := lexers.Match(filename)
 	// lexer = chroma.Coalesce(lexer)
 
-	style := styles.Get("monokai")
+	style := styles.Get("monokailight")
 
 	iterator, err := lexer.Tokenise(nil, string(someSourceCode[:]))
 	if err == nil {
 		formatter := New()
 		formattedLines, _ = formatter.formatLines(style, iterator.Tokens())
 	}
-	return formattedLines
+	return *formattedLines
 }
 
 // New HTML formatter.
@@ -105,7 +111,8 @@ func (f *Formatter) formatLines(style *chroma.Style, tokens []*chroma.Token) (*[
 	}
 
 	lines := splitTokensIntoLines(tokens)
-	formattedLines := make([]string, len(lines))
+	var formattedLines []string
+	formattedLines = make([]string, len(lines))
 	highlightIndex := 0
 
 	highlightIndex = 0
@@ -137,7 +144,8 @@ func (f *Formatter) formatLines(style *chroma.Style, tokens []*chroma.Token) (*[
 		}
 		fmt.Fprint(&w, "</pre>")
 
-		formattedLines = append(formattedLines, w.String())
+		formattedLines[index] = w.String()
+		w.Reset()
 	}
 
 	return &formattedLines, nil

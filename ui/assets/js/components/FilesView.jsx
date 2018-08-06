@@ -17,10 +17,11 @@ const getRegExp = (q, icase) => {
  * Produce html for a line using the regexp to highlight matches.
  */
 var ContentFor = function(line, regexp) {
-    if (!line.Match) {
-      return line.Content;
+  return line.FormattedLine;
+  if (!line.Match) {
+      return line.FormattedLine;
     }
-    var content = line.Content,
+    var content = line.FormattedLine,
         buffer = [];
 
     while (content) {
@@ -55,7 +56,7 @@ class FilesView extends React.Component {
               <a href={UrlToRepo(repo, fileMatch.Filename, line.Number, rev)}
                   className="lnum"
                   target="_blank">{line.Number}</a>
-              <span className="lval">{ContentFor(line, regexp)}</span>
+              <span className="lval" dangerouslySetInnerHTML={{__html: ContentFor(line, regexp)}}></span>
             </div>
             );
           });

@@ -29,6 +29,8 @@ const (
 	reasonNotText     = "Not a text file."
 )
 
+var formattedFiles map[string][]string
+
 type Index struct {
 	Ref *IndexRef
 	idx *index.Index
@@ -50,7 +52,7 @@ type SearchOptions struct {
 
 type MatchLine struct {
 	Line          string `json:"Content"`
-	FormattedLine string `json:"formatted"`
+	FormattedLine string
 	Match         bool
 	LineNum       int `json:"Number"`
 }
@@ -185,31 +187,39 @@ func (n *Index) Search(pat string, opt *SearchOptions) (*SearchResponse, error) 
 
 		filesOpened++
 		if err := g.grep2File(filepath.Join(n.Ref.dir, "raw", name), re, int(opt.LinesOfContext),
-			func(line []byte, lineno int, before [][]byte, after [][]byte) (bool, error) {
+			func(line []byte, matchLineNo int, before [][]byte, after [][]byte) (bool, error) {
+
+				path := filepath.Join(n.Ref.dir, "raw", name)
+				formattedFile, ok := formattedFiles[path]
+				if !ok {
+					formattedFiles[path] = FormatFile(path)
+					formattedFile = formattedFiles[path]
+				}
 
 				hasMatch = true
 				if filesFound < opt.Offset || (opt.Limit > 0 && filesCollected >= opt.Limit) {
 					return false, nil
 				}
-
 				matchesCollected++
 				tmpMatchLines := make([]*MatchLine, len(before)+len(after)+1)
 				for i, l := range toStrings(before) {
+					lineNo := matchLineNo - len(before) + i
 					tmpMatchLines[i] = &MatchLine{
-						l, "", false, lineno - len(before) + i,
+						l, formattedFile[lineNo-1], false, lineNo,
 					}
 				}
 				tmpMatchLines[len(before)] = &MatchLine{
-					string(line), "", true, lineno,
+					string(line), formattedFile[matchLineNo-1], true, matchLineNo,
 				}
 				for i, l := range toStrings(after) {
+					lineNo := matchLineNo + i + 1
 					tmpMatchLines[len(before)+i+1] = &MatchLine{
-						l, "", false, lineno + i + 1,
+						l, formattedFile[lineNo-1], false, lineNo,
 					}
 				}
 
 				matches = append(matches, &Match{
-					LineNumber: lineno - len(before),
+					LineNumber: matchLineNo - len(before),
 					Lines:      tmpMatchLines,
 				})
 
@@ -504,4 +514,8 @@ func Open(dir string) (*Index, error) {
 	}
 
 	return r.Open()
+}
+
+func init() {
+	formattedFiles = make(map[string][]string)
 }

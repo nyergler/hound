@@ -259,6 +259,13 @@ button:focus {
 .file-body {
   /* Allow horizontal scrolling in code, similar to github.com */
   overflow: auto;
+  background-color: #fafafa;
+}
+
+.file-body .lval > pre {
+  display: inline-block;
+  margin: auto;
+  width: 100%;
 }
 
 .match {
