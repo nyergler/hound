@@ -81,10 +81,10 @@ func (p *ackPresenter) Present(
 			for _, block := range blocks {
 				for i, n := 0, len(block.Lines); i < n; i++ {
 					line := block.Lines[i]
-					hasMatch := block.Matches[i]
+					hasMatch := line.Match
 
 					if hasMatch {
-						line = hiliteMatches(c, re, line)
+						// line = hiliteMatches(c, re, line)
 					}
 
 					if _, err := fmt.Fprintf(p.f, "%s%s\n",

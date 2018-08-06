@@ -5,11 +5,9 @@ import (
 )
 
 type Block struct {
-	Lines      []string `json:"-"`
-	Matches    []bool   `json:"-"`
 	Start      int
 	MatchCount int
-	BlockLines []*index.MatchLine `json:"Lines"`
+	Lines      []*index.MatchLine
 }
 
 func endOfBlock(b *Block) int {
@@ -17,7 +15,7 @@ func endOfBlock(b *Block) int {
 }
 
 func startOfMatch(m *index.Match) int {
-	return m.LineNumber - len(m.Before)
+	return m.LineNumber
 }
 
 func matchIsInBlock(m *index.Match, b *Block) bool {
@@ -25,48 +23,10 @@ func matchIsInBlock(m *index.Match, b *Block) bool {
 }
 
 func matchToBlock(m *index.Match) *Block {
-	b, a := len(m.Before), len(m.After)
-	n := 1 + b + a
-	l := make([]string, 0, n)
-	bl := make([]*index.MatchLine, 0, n)
-	v := make([]bool, n)
-
-	v[b] = true
-
-	for i, line := range m.Before {
-		l = append(l, line)
-		bl = append(bl, &index.MatchLine{
-			Line:          line,
-			FormattedLine: line,
-			Match:         false,
-			LineNum:       m.LineNumber - len(m.Before) + i,
-		})
-	}
-
-	l = append(l, m.Line)
-	bl = append(bl, &index.MatchLine{
-		Line:          m.Line,
-		FormattedLine: m.Line,
-		Match:         true,
-		LineNum:       m.LineNumber,
-	})
-
-	for i, line := range m.After {
-		l = append(l, line)
-		bl = append(bl, &index.MatchLine{
-			Line:          line,
-			FormattedLine: line,
-			Match:         false,
-			LineNum:       m.LineNumber + i + 1,
-		})
-	}
-
 	return &Block{
-		Lines:      l,
-		Matches:    v,
-		Start:      m.LineNumber - len(m.Before),
+		Lines:      m.Lines,
+		Start:      m.LineNumber,
 		MatchCount: 1,
-		BlockLines: bl,
 	}
 }
 
@@ -79,24 +39,10 @@ func clampZero(n int) int {
 
 func mergeMatchIntoBlock(m *index.Match, b *Block) {
 	off := endOfBlock(b) - startOfMatch(m) + 1
-	idx := len(b.Lines) - off
-	nb := len(m.Before)
+	nb := len(m.Lines)
 
 	for i := off; i < nb; i++ {
-		b.Lines = append(b.Lines, m.Before[i])
-		b.Matches = append(b.Matches, false)
-	}
-
-	if off < nb+1 {
-		b.Lines = append(b.Lines, m.Line)
-		b.Matches = append(b.Matches, true)
-	} else {
-		b.Matches[idx+nb] = true
-	}
-
-	for i, n := clampZero(off-nb-1), len(m.After); i < n; i++ {
-		b.Lines = append(b.Lines, m.After[i])
-		b.Matches = append(b.Matches, false)
+		b.Lines = append(b.Lines, m.Lines[i])
 	}
 }
 

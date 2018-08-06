@@ -56,11 +56,8 @@ type MatchLine struct {
 }
 
 type Match struct {
-	Line         string
-	LineNumber   int
-	Before       []string
-	After        []string
-	MatchedLines []*MatchLine
+	LineNumber int
+	Lines      []*MatchLine
 }
 
 type SearchResponse struct {
@@ -212,11 +209,8 @@ func (n *Index) Search(pat string, opt *SearchOptions) (*SearchResponse, error) 
 				}
 
 				matches = append(matches, &Match{
-					Line:         string(line),
-					LineNumber:   lineno,
-					Before:       toStrings(before),
-					After:        toStrings(after),
-					MatchedLines: tmpMatchLines,
+					LineNumber: lineno - len(before),
+					Lines:      tmpMatchLines,
 				})
 
 				if matchesCollected > matchLimit {
