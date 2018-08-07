@@ -259,7 +259,6 @@ button:focus {
 .file-body {
   /* Allow horizontal scrolling in code, similar to github.com */
   overflow: auto;
-  background-color: #fafafa;
 }
 
 .file-body .lval > pre {
@@ -357,3 +356,95 @@ button:focus {
   margin-bottom: 40px;
 }
 
+  .Text{
+    color:                #272822;
+  }
+
+	.Error{
+    color:               #960050;
+    background-color:  #1e0010;
+  }
+
+	.Comment{
+    color:             #75715e;
+  }
+
+	.Keyword{
+    color:             #00a8c8;
+  }
+
+	.KeywordNamespace{
+    color:    #f92672;
+  }
+
+	.Operator{
+    color:            #f92672;
+  }
+
+	.Punctuation{
+    color:         #111111;
+  }
+
+	.Name{
+    color:                #111111;
+  }
+
+	.NameAttribute{
+    color:       #75af00;
+  }
+
+	.NameClass{
+    color:           #75af00;
+  }
+
+	.NameConstant{
+    color:        #00a8c8;
+  }
+
+	.NameDecorator{
+    color:       #75af00;
+  }
+
+	.NameException{
+    color:       #75af00;
+  }
+
+	.NameFunction{
+    color:        #75af00;
+  }
+
+	.NameOther{
+    color:           #75af00;
+  }
+
+	.NameTag{
+    color:             #f92672;
+  }
+
+	.LiteralNumber{
+    color:       #ae81ff;
+  }
+
+	.Literal{
+    color:             #ae81ff;
+  }
+
+	.LiteralDate{
+    color:         #d88200;
+  }
+
+	.LiteralString{
+    color:       #d88200;
+  }
+
+	.LiteralStringEscape{
+    color: #8045FF;
+  }
+
+	.GenericEmph{
+    font-style: italic;
+  }
+
+	.GenericStrong{
+    font-weight: bold;
+  }

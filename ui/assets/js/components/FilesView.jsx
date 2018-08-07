@@ -6,6 +6,9 @@ import { connect } from 'react-redux';
 import { loadMore } from '../actions';
 import { UrlToRepo } from '../common';
 
+import styles from '../../css/hound.css';
+
+
 const getRegExp = (q, icase) => {
     return new RegExp(
       q.trim(),
@@ -13,31 +16,25 @@ const getRegExp = (q, icase) => {
     );
 }
 
+const TOKEN_TAGS = {
+  other: 'span'
+}
+
 /**
  * Produce html for a line using the regexp to highlight matches.
  */
 var ContentFor = function(line, regexp) {
-  return line.FormattedLine;
-  if (!line.Match) {
-      return line.FormattedLine;
-    }
-    var content = line.FormattedLine,
-        buffer = [];
+  if (!line.LineTokens) {
+    return line.FormattedLine;
+  }
+  const tokens = line.LineTokens;
+  const buffer = tokens.map((t) => {
+    const Tag = TOKEN_TAGS[t.type] || TOKEN_TAGS['other'];
+    return <Tag className={styles[t.type]}>{t.value}</Tag>;
+  });
 
-    while (content) {
-      regexp.lastIndex = 0;
-      var m = regexp.exec(content);
-      if (!m) {
-        buffer.push(content);
-        break;
-      }
-
-      buffer.push(content.substring(0, regexp.lastIndex - m[0].length));
-      buffer.push( <em key={buffer.length}>{m[0]}</em>);
-      content = content.substring(regexp.lastIndex);
-    }
-    return <Fragment>{buffer}</Fragment>;
-  };
+  return <Fragment>{buffer}</Fragment>;
+};
 
 class FilesView extends React.Component {
 
@@ -56,7 +53,7 @@ class FilesView extends React.Component {
               <a href={UrlToRepo(repo, fileMatch.Filename, line.Number, rev)}
                   className="lnum"
                   target="_blank">{line.Number}</a>
-              <span className="lval" dangerouslySetInnerHTML={{__html: ContentFor(line, regexp)}}></span>
+              <span className="lval">{ContentFor(line, regexp)}</span>
             </div>
             );
           });

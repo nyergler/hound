@@ -27,7 +27,7 @@ func FormatFile(filename string) []string {
 	someSourceCode, _ := ioutil.ReadAll(gf)
 	// ioutil.ReadFile(filename)
 	lexer := lexers.Match(filename)
-	// lexer = chroma.Coalesce(lexer)
+	lexer = chroma.Coalesce(lexer)
 
 	style := styles.Get("monokailight")
 
@@ -37,6 +37,19 @@ func FormatFile(filename string) []string {
 		formattedLines, _ = formatter.formatLines(style, iterator.Tokens())
 	}
 	return *formattedLines
+}
+
+func FileToTokens(filename string) [][]*chroma.Token {
+
+	f, _ := os.Open(filename)
+	gf, _ := gzip.NewReader(f)
+	someSourceCode, _ := ioutil.ReadAll(gf)
+
+	lexer := lexers.Match(filename)
+	lexer = chroma.Coalesce(lexer)
+
+	iterator, _ := lexer.Tokenise(nil, string(someSourceCode[:]))
+	return splitTokensIntoLines(iterator.Tokens())
 }
 
 // New HTML formatter.

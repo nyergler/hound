@@ -12,6 +12,8 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/alecthomas/chroma"
+
 	"github.com/etsy/hound/codesearch/index"
 	"github.com/etsy/hound/codesearch/regexp"
 )
@@ -30,6 +32,7 @@ const (
 )
 
 var formattedFiles map[string][]string
+var fileTokens map[string][][]*chroma.Token
 
 type Index struct {
 	Ref *IndexRef
@@ -55,6 +58,7 @@ type MatchLine struct {
 	FormattedLine string
 	Match         bool
 	LineNum       int `json:"Number"`
+	LineTokens    []*chroma.Token
 }
 
 type Match struct {
@@ -196,6 +200,12 @@ func (n *Index) Search(pat string, opt *SearchOptions) (*SearchResponse, error) 
 					formattedFile = formattedFiles[path]
 				}
 
+				curTokens, ok := fileTokens[path]
+				if !ok {
+					fileTokens[path] = FileToTokens(path)
+					curTokens = fileTokens[path]
+				}
+
 				hasMatch = true
 				if filesFound < opt.Offset || (opt.Limit > 0 && filesCollected >= opt.Limit) {
 					return false, nil
@@ -205,16 +215,16 @@ func (n *Index) Search(pat string, opt *SearchOptions) (*SearchResponse, error) 
 				for i, l := range toStrings(before) {
 					lineNo := matchLineNo - len(before) + i
 					tmpMatchLines[i] = &MatchLine{
-						l, formattedFile[lineNo-1], false, lineNo,
+						l, formattedFile[lineNo-1], false, lineNo, curTokens[lineNo-1],
 					}
 				}
 				tmpMatchLines[len(before)] = &MatchLine{
-					string(line), formattedFile[matchLineNo-1], true, matchLineNo,
+					string(line), formattedFile[matchLineNo-1], true, matchLineNo, curTokens[matchLineNo-1],
 				}
 				for i, l := range toStrings(after) {
 					lineNo := matchLineNo + i + 1
 					tmpMatchLines[len(before)+i+1] = &MatchLine{
-						l, formattedFile[lineNo-1], false, lineNo,
+						l, formattedFile[lineNo-1], false, lineNo, curTokens[lineNo-1],
 					}
 				}
 
@@ -518,4 +528,5 @@ func Open(dir string) (*Index, error) {
 
 func init() {
 	formattedFiles = make(map[string][]string)
+	fileTokens = make(map[string][][]*chroma.Token)
 }
