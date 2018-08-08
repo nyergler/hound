@@ -7,7 +7,7 @@ ifdef DEBUG
 	WEBPACK_ARGS := -d
 endif
 
-ALL: $(CMDS)
+all: $(CMDS)
 
 ui: ui/bindata.go
 
@@ -21,7 +21,7 @@ $(GOPATH)/bin/hound: ui/bindata.go $(SRCS)
 	go install github.com/etsy/hound/cmds/hound
 
 .build/bin/go-bindata:
-	GOPATH=`pwd`/.build go get github.com/jteeuwen/go-bindata/...
+	GOPATH=`pwd`/.build go get github.com/jteeuwen/go-bindata/...@6025e8de665b31fa74ab1a66f2cddd8c0abf887e
 
 ui/bindata.go: .build/bin/go-bindata node_modules $(wildcard ui/assets/**/*)
 	rsync -r ui/assets/* .build/ui
