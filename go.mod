@@ -8,6 +8,7 @@ require (
 	github.com/danwakefield/fnmatch v0.0.0-20160403171240-cbb64ac3d964 // indirect
 	github.com/davecgh/go-spew v1.1.0 // indirect
 	github.com/dlclark/regexp2 v1.1.6 // indirect
+	github.com/elazarl/go-bindata-assetfs v0.0.0-20180223160309-38087fe4dafb
 	github.com/jteeuwen/go-bindata v0.0.0-20180305030458-6025e8de665b // indirect
 	github.com/mattn/go-isatty v0.0.3 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
