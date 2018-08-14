@@ -28,9 +28,9 @@ var ContentFor = function(line, regexp) {
     return line.FormattedLine;
   }
   const tokens = line.LineTokens;
-  const buffer = tokens.map((t) => {
+  const buffer = tokens.map((t, i) => {
     const Tag = TOKEN_TAGS[t.type] || TOKEN_TAGS['other'];
-    return <Tag className={styles[t.type]}>{t.value}</Tag>;
+    return <Tag key={`tag-${i}`} className={styles[t.type]}>{t.value}</Tag>;
   });
 
   return <Fragment>{buffer}</Fragment>;
