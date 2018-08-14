@@ -40,20 +40,20 @@ button:focus {
   box-shadow: 0 0 6px rgba(0,153,255,.75);
 }
 
-#root {
+.root {
   max-width: 960px;
   margin: 0 auto;
   padding: 0 20px 20px 20px;
 }
 
 
-#input {
+.input {
   margin-top: 40px;
   margin-bottom: 40px;
 }
 
 /* Search container */
-#ina {
+.ina {
   display: table;
   width: 100%;
   position: relative;
@@ -62,7 +62,7 @@ button:focus {
 }
 
 /* Search input */
-#ina > input {
+.ina > input {
   height: 55px;
   padding: 0 7px;
   border-right: 0;
@@ -76,14 +76,14 @@ button:focus {
   vertical-align: middle;
 }
 
-#ina > .button-add-on {
+.ina > .button-add-on {
   display: table-cell;
   vertical-align: middle;
   width: 1%;
 }
 
 /* Search submit button */
-#dodat {
+.dodat {
   border-radius: 0 3px 3px 0;
   height: 55px;
   width: 72px;
@@ -93,7 +93,7 @@ button:focus {
   background-size: 17px;
 }
 
-#inb {
+.inb {
   box-sizing: border-box;
   width: 95%;
   margin: 0 auto;
@@ -106,7 +106,7 @@ button:focus {
   background-color: #fff;
 }
 
-#adv {
+.adv {
   box-sizing: border-box;
   overflow: hidden;
   transition: height, padding 0.1s ease-in-out;
@@ -117,23 +117,23 @@ button:focus {
 }
 
 /* Media object clearfix */
-#adv > .field {
+.adv > .field {
   overflow: hidden;
 }
 
-#adv > .field > label {
+.adv > .field > label {
   /* Media object left */
   float: left;
   width: 90px;
   color: #999;
 }
 
-#adv > .field > .field-input {
+.adv > .field > .field-input {
   /* New block formatting context for media object */
   overflow: hidden;
 }
 
-#adv > .field input[type=text] {
+.adv > .field input[type=text] {
   line-height: 24px;
   box-sizing: border-box;
   width: 100%;
@@ -150,19 +150,19 @@ button:focus {
   color: #666;
 }
 
-#inb > .ban {
+.inb > .ban {
   transition: max-height, opacity 0.1s ease-in-out;
   opacity: 1;
   overflow: hidden;
   cursor: pointer;
 }
 
-#inb > .ban > em {
+.inb > .ban > em {
   font-style: normal;
   color: #aaa;
 }
 
-#input > .stats {
+.input > .stats {
   width: 95%;
   font-size: 12px;
   padding: 4px 0;
@@ -183,13 +183,13 @@ button:focus {
 .stats-left { float: left }
 .stats-right { float: right }
 
-#input > .stats .val,
-#input > .stats a {
+.input > .stats .val,
+.input > .stats a {
   display: inline-block;
   margin: 5px;
 }
 
-#no-result {
+.no-result {
   margin: 0 auto;
   font-size: 24px;
   text-align: center;
@@ -198,11 +198,11 @@ button:focus {
   text-shadow: 1px 1px 0 #fff;
 }
 
-#no-result > div {
+.no-result > div {
   font-size: 12px;
 }
 
-#no-result.error {
+.no-result.error {
   color: #8a6d3b;
   background-color: #fcf8e3;
   border: 1px solid #faebcc;
@@ -210,7 +210,7 @@ button:focus {
   border-radius: 3px;
 }
 
-#no-result.error > strong {
+.no-result.error > strong {
   margin-right: 10px;
 }
 
@@ -351,7 +351,7 @@ button:focus {
   background-color: gray;
 }
 
-#excluded_container {
+.excluded_container {
   margin-top: 40px;
   margin-bottom: 40px;
 }

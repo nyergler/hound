@@ -3,6 +3,8 @@ import React from 'react';
 import { connect } from 'react-redux';
 import FilesView from './FilesView.jsx';
 
+import styles from '../../css/hound.css';
+import octicons from "../../css/octicons/octicons.css"
 
 class ResultView extends React.Component {
     constructor(props) {
@@ -14,7 +16,7 @@ class ResultView extends React.Component {
     render() {
         if (this.state.error) {
             return (
-                <div id="no-result" className="error">
+                <div id="no-result" className={styles.error}>
                     <strong>ERROR:</strong>{this.state.error}
                 </div>
             );
@@ -37,10 +39,10 @@ class ResultView extends React.Component {
             results = this.props.results || [];
         var repos = results.map((result, index) => {
             return (
-                <div className="repo" key={result.Repo}>
-                    <div className="title">
-                        <span className="mega-octicon octicon-repo"></span>
-                        <span className="name">{result.Repo}</span>
+                <div className={styles.repo} key={result.Repo}>
+                    <div className={styles.title}>
+                        <span className={`${octicons["mega-octicon"]} ${octicons["octicon-repo"]}`}></span>
+                        <span className={styles.name}>{result.Repo}</span>
                     </div>
                     <FilesView
                         matches={this.props.resultsByRepo[result.Repo].Matches}

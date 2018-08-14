@@ -9,6 +9,7 @@ import searchApp from './reducers.js';
 
 import SearchBar from './components/SearchBar.jsx';
 import ResultView from './components/ResultView.jsx';
+import styles from '../css/hound.css';
 
 const ParamsFromQueryString = function (qs, params) {
   params = params || {};
@@ -80,7 +81,7 @@ class App extends React.Component {
 
   render() {
     return (
-      <div>
+      <div className={styles.root}>
         <SearchBar
           q={this.state.q}
           i={this.state.i}

@@ -49,28 +49,28 @@ class FilesView extends React.Component {
         const blocks = fileMatch.Matches.map((matchBlock, j) => {
           const matchLines = matchBlock.Lines.map((line, k) => {
             return (
-              <div className="line" key={`${fileMatch.Filename}-${line.Number}`}>
+              <div className={styles.line} key={`${fileMatch.Filename}-${line.Number}`}>
               <a href={UrlToRepo(repo, fileMatch.Filename, line.Number, rev)}
-                  className="lnum"
+                  className={styles.lnum}
                   target="_blank">{line.Number}</a>
-              <span className="lval">{ContentFor(line, regexp)}</span>
+              <span className={styles.lval}>{ContentFor(line, regexp)}</span>
             </div>
             );
           });
 
           return (
-            <div className="match" key={`${fileMatch.Filename}-${j}`}>{matchLines}</div>
+            <div className={styles.match} key={`${fileMatch.Filename}-${j}`}>{matchLines}</div>
           )
         });
 
         return (
-          <div className="file" key={fileMatch.Filename}>
-            <div className="title">
+          <div className={styles.file} key={fileMatch.Filename}>
+            <div className={styles.title}>
               <a href={UrlToRepo(repo, fileMatch.Filename, null, rev)}>
                 {fileMatch.Filename}
               </a>
             </div>
-            <div className="file-body">
+            <div className={styles["file-body"]}>
               {blocks}
             </div>
           </div>
@@ -81,13 +81,13 @@ class FilesView extends React.Component {
       if (matches.length < totalMatches) {
         more = (
         <button
-          className="moar"
+          className={styles.moar}
           onClick={() => this.props.onLoadMore(this.props.repoName, matches.length, totalMatches, this.props.searchParams)}
         >Load all {totalMatches} matches in {this.props.repoName}</button>);
       }
 
       return (
-        <div className="files">
+        <div className={styles.files}>
         {files}
         {more}
         </div>

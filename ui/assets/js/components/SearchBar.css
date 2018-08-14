@@ -1,6 +1,7 @@
 .hideAdvanced {
     height: 0;
     padding: 0;
+    display: none;
 }
 
 .showBanner {

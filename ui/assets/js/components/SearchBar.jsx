@@ -2,9 +2,10 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import { connect } from 'react-redux';
 import { loadRepos, search } from '../actions';
-import RepoOption from './RepoOption.jsx';
-import Styles from './SearchBar.css';
 
+import houndStyles from '../../css/hound.css';
+import octicons from "../../css/octicons/octicons.css"
+import styles from './Searchbar.css';
 
 var FormatNumber = function (t) {
   var s = '' + (t | 0),
@@ -146,26 +147,26 @@ export class SearchBar extends React.Component {
     var statsView = '';
     if (stats) {
       statsView = (
-        <div className="stats">
-          <div className="stats-left">
+        <div className={houndStyles.stats}>
+          <div className={houndStyles["stats-left"]}>
             <a href="excluded_files.html"
-              className="link-gray">
+              className={houndStyles["link-gray"]}>
               Excluded Files
               </a>
           </div>
-          <div className="stats-right">
-            <div className="val">{FormatNumber(stats.Total)}ms total</div> /
-              <div className="val">{FormatNumber(stats.Server)}ms server</div> /
-              <div className="val">{stats.Files} files</div>
+          <div className={houndStyles["stats-right"]}>
+            <div className={houndStyles.val}>{FormatNumber(stats.Total)}ms total</div> /
+              <div className={houndStyles.val}>{FormatNumber(stats.Server)}ms server</div> /
+              <div className={houndStyles.val}>{stats.Files} files</div>
           </div>
         </div>
       );
     }
 
     return (
-      <div id="input">
-        <div id="ina">
-          <input id="q"
+      <div className={houndStyles.input}>
+        <div className={houndStyles.ina}>
+          <input className={houndStyles.q}
             type="text"
             placeholder="Search by Regexp"
             ref="q"
@@ -175,35 +176,35 @@ export class SearchBar extends React.Component {
             onChange={this.handleInputChange.bind(this)}
             onKeyDown={this.queryGotKeydown.bind(this)}
             onFocus={this.queryGotFocus.bind(this)} />
-          <div className="button-add-on">
-            <button id="dodat" onClick={this.submitQuery.bind(this)}></button>
+          <div className={houndStyles["button-add-on"]}>
+            <button className={houndStyles.dodat} onClick={this.submitQuery.bind(this)}></button>
           </div>
         </div>
 
-        <div id="inb">
-          <div id="adv" className={this.state.showAdvanced ? Styles.showAdvanced : Styles.hideAdvanced}>
-            <span className="octicon octicon-chevron-up hide-adv" onClick={this.toggleAdvanced.bind(this)}></span>
-            <div className="field">
+        <div className={houndStyles.inb}>
+          <div className={houndStyles.adv} className={this.state.showAdvanced ? styles.showAdvanced : styles.hideAdvanced}>
+            <span className={`${houndStyles["hide-adv"]} ${octicons.octicon} ${octicons["octicon-chevron-up"]}`} onClick={this.toggleAdvanced.bind(this)}></span>
+            <div className={houndStyles.field}>
               <label htmlFor="files">File Path</label>
-              <div className="field-input">
+              <div className={houndStyles["field-input"]}>
                 <input type="text"
-                  id="files"
+                  className={houndStyles.files}
                   name="files"
                   placeholder="regexp"
                   value={this.state.files}
                   onChange={this.handleInputChange.bind(this)} />
               </div>
             </div>
-            <div className="field">
+            <div className={houndStyles.field}>
               <label htmlFor="ignore-case">Ignore Case</label>
-              <div className="field-input">
+              <div className={houndStyles["field-input"]}>
                 <input id="ignore-case" type="checkbox" name="icase" checked={this.state.icase} onChange={this.handleInputChange.bind(this)} />
               </div>
             </div>
-            <div className="field">
-              <label className="multiselect_label" htmlFor="repos">Select Repo</label>
-              <div className="field-input">
-                <select id="repos" name="repos" className="form-control multiselect" multiple={true}
+            <div className={houndStyles.field}>
+              <label className={houndStyles.multiselect_label} htmlFor="repos">Select Repo</label>
+              <div className={houndStyles["field-input"]}>
+                <select className={`form-control multiselect ${houndStyles.repos}`} name="repos" multiple={true}
                   onChange={this.handleInputChange.bind(this)}
                   value={this.state.repos}
                   size={Math.min(16, repoCount)}>
@@ -212,7 +213,7 @@ export class SearchBar extends React.Component {
               </div>
             </div>
           </div>
-          <div className="ban" className={this.state.showAdvanced ? Styles.hideBanner : Styles.showBanner} onClick={this.toggleAdvanced.bind(this)}>
+          <div className={houndStyles.ban} className={this.state.showAdvanced ? styles.hideBanner : styles.showBanner} onClick={this.toggleAdvanced.bind(this)}>
             <em>Advanced:</em> ignore case, filter by path, stuff like that.
             </div>
         </div>
