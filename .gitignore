@@ -4,4 +4,5 @@
 .DS_Store
 *.exe
 
+/.cache/
 bindata_assetfs.go

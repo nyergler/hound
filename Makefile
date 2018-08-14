@@ -2,11 +2,6 @@ CMDS := $(GOPATH)/bin/houndd $(GOPATH)/bin/hound
 
 SRCS := $(shell find . -type f -name '*.go' -or -name '*.jsx' -or -name '*.js')
 
-WEBPACK_ARGS := -p
-ifdef DEBUG
-	WEBPACK_ARGS := -d
-endif
-
 all: $(CMDS)
 
 ui: ui/bindata.go ui/bindata_assetfs.go
@@ -25,8 +20,7 @@ $(GOPATH)/bin/hound: ui/bindata_assetfs.go $(SRCS)
 	GOPATH=`pwd`/.build go get github.com/elazarl/go-bindata-assetfs/go-bindata-assetfs@38087fe4dafb822e541b3f7955075cc1c30bd294
 
 ui/bindata_assetfs.go: .build/bin/go-bindata-assetfs node_modules $(wildcard ui/assets/**/*)
-	rsync -r ui/assets/* .build/ui
-	npm run webpack -- $(WEBPACK_ARGS)
+	npm run parcel -- build -d .build/ui ui/assets/index.html
 	PATH=`pwd`/.build/bin $< -o $@ -pkg ui -prefix .build/ui -nomemcopy .build/ui/...
 
 test:
