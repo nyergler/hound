@@ -2,7 +2,6 @@ package insight
 
 import (
 	"context"
-	"fmt"
 	"net"
 
 	"github.com/sourcegraph/go-langserver/pkg/lsp"
@@ -12,6 +11,36 @@ import (
 type LspClient struct {
 	client     *jsonrpc2.Conn
 	languageID string
+}
+type clientKey struct {
+	languageID string
+	root       string
+}
+
+var clientCache map[clientKey]*LspClient
+
+func init() {
+	clientCache = make(map[clientKey]*LspClient)
+}
+
+func Connect(ctx context.Context, language, root string) (*LspClient, error) {
+
+	client, ok := clientCache[clientKey{language, root}]
+	if ok {
+		return client, nil
+	}
+
+	client, err := Dial(ctx, language, "127.0.0.1:2089")
+
+	if err != nil {
+		return nil, err
+	}
+
+	client.Initialize(ctx, lsp.DocumentURI(root))
+
+	clientCache[clientKey{language, root}] = client
+
+	return client, nil
 }
 
 func Dial(ctx context.Context, languageId, address string) (*LspClient, error) {
@@ -83,7 +112,7 @@ func (l *LspClient) References(ctx context.Context, location *lsp.TextDocumentPo
 		},
 	}
 
-	err := l.client.Call(ctx, "textDocument/implementation", &params, &result)
+	err := l.client.Call(ctx, "textDocument/references", &params, &result)
 
 	return result, err
 }
@@ -92,8 +121,6 @@ func (l *LspClient) Symbol(ctx context.Context, params *lsp.WorkspaceSymbolParam
 	result := []lsp.SymbolInformation{}
 
 	err := l.client.Call(ctx, "workspace/symbol", &params, &result)
-
-	fmt.Printf("%v", err)
 
 	return result, err
 }

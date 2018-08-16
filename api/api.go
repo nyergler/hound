@@ -322,26 +322,13 @@ func Setup(m *http.ServeMux, idx map[string]*searcher.Searcher) {
 		}
 
 		// dial the language server
-		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		client, err := insight.Dial(ctx, "javascript", "127.0.0.1:2089")
-		fmt.Println("Dialed", client)
-		fmt.Printf("%v", err)
-
+		client, err := insight.Connect(ctx, "javascript", repoRoot.String())
 		if err != nil {
 			writeError(w, err, http.StatusBadGateway)
-			return
 		}
-		fmt.Printf("\n\ninitializing\n")
-
-		result, _ := client.Initialize(ctx, lsp.DocumentURI(repoRoot.String()))
-		fmt.Printf(
-			"%v",
-			result,
-		)
-		fmt.Println()
-		fmt.Printf("Done initializing!")
 
 		// make the request
 		documentURI, _ := url.Parse(repoRoot.String())
@@ -356,14 +343,10 @@ func Setup(m *http.ServeMux, idx map[string]*searcher.Searcher) {
 				Character: int(parseAsUintValue(r.FormValue("character"), 0, math.MaxInt32, 0)),
 			},
 		}
-		fmt.Println(documentURI.String())
 		hoverInfo, err := client.Hover(ctx, &position)
 		definition, err := client.Definition(ctx, &position)
 		implementation, err := client.Implementation(ctx, &position)
-		references, err := client.References(ctx, &position, true)
-
-		fmt.Printf("%v\n", err)
-		fmt.Printf("%v\n\n", hoverInfo)
+		references, err := client.References(ctx, &position, false)
 
 		writeResp(w, &HoverInfo{Hover: *hoverInfo, Definition: definition, Implementation: implementation, References: references})
 
