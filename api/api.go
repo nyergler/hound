@@ -1,11 +1,15 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
+	"math"
 	"net/http"
+	"net/url"
+	"path"
 	"strconv"
 	"strings"
 	"time"
@@ -13,7 +17,9 @@ import (
 	"github.com/etsy/hound/client"
 	"github.com/etsy/hound/config"
 	"github.com/etsy/hound/index"
+	"github.com/etsy/hound/insight"
 	"github.com/etsy/hound/searcher"
+	"github.com/sourcegraph/go-langserver/pkg/lsp"
 )
 
 const (
@@ -94,6 +100,13 @@ type SearchResponse struct {
 	FilesOpened    int           `json:"-"`
 	Duration       time.Duration `json:"-"`
 	Revision       string
+}
+
+type HoverInfo struct {
+	Hover          lsp.Hover
+	Definition     []lsp.Location
+	Implementation []lsp.Location
+	References     []lsp.Location
 }
 
 /**
@@ -296,6 +309,64 @@ func Setup(m *http.ServeMux, idx map[string]*searcher.Searcher) {
 		}
 
 		writeResp(w, &res)
+	})
+
+	m.HandleFunc("/api/v2/hover", func(w http.ResponseWriter, r *http.Request) {
+		repoName := r.FormValue("repoName")
+		repo, ok := idx[repoName]
+		repoRoot, _ := url.Parse("file://" + repo.VcsDir)
+
+		if !ok {
+			writeError(w, errors.New("Invalid Repo"), http.StatusBadRequest)
+			return
+		}
+
+		// dial the language server
+		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+		defer cancel()
+
+		client, err := insight.Dial(ctx, "javascript", "127.0.0.1:2089")
+		fmt.Println("Dialed", client)
+		fmt.Printf("%v", err)
+
+		if err != nil {
+			writeError(w, err, http.StatusBadGateway)
+			return
+		}
+		fmt.Printf("\n\ninitializing\n")
+
+		result, _ := client.Initialize(ctx, lsp.DocumentURI(repoRoot.String()))
+		fmt.Printf(
+			"%v",
+			result,
+		)
+		fmt.Println()
+		fmt.Printf("Done initializing!")
+
+		// make the request
+		documentURI, _ := url.Parse(repoRoot.String())
+		documentURI.Path = path.Join(documentURI.Path, r.FormValue("filename"))
+
+		position := lsp.TextDocumentPositionParams{
+			TextDocument: lsp.TextDocumentIdentifier{
+				URI: lsp.DocumentURI(documentURI.String()),
+			},
+			Position: lsp.Position{
+				Line:      int(parseAsUintValue(r.FormValue("line"), 0, math.MaxInt32, 0)),
+				Character: int(parseAsUintValue(r.FormValue("character"), 0, math.MaxInt32, 0)),
+			},
+		}
+		fmt.Println(documentURI.String())
+		hoverInfo, err := client.Hover(ctx, &position)
+		definition, err := client.Definition(ctx, &position)
+		implementation, err := client.Implementation(ctx, &position)
+		references, err := client.References(ctx, &position, true)
+
+		fmt.Printf("%v\n", err)
+		fmt.Printf("%v\n\n", hoverInfo)
+
+		writeResp(w, &HoverInfo{Hover: *hoverInfo, Definition: definition, Implementation: implementation, References: references})
+
 	})
 
 	m.HandleFunc("/api/v1/excludes", func(w http.ResponseWriter, r *http.Request) {

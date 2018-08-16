@@ -13,6 +13,8 @@ require (
 	github.com/mattn/go-isatty v0.0.3 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/sergi/go-diff v1.0.0 // indirect
+	github.com/sourcegraph/go-langserver v1.0.1-0.20180807144045-bf90fac03a4d
+	github.com/sourcegraph/jsonrpc2 v0.0.0-20180501180217-a3d86c792f0f
 	github.com/stretchr/testify v1.2.2 // indirect
 	golang.org/x/sys v0.0.0-20180807162357-acbc56fc7007 // indirect
 )

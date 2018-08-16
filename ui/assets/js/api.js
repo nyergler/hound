@@ -77,3 +77,18 @@ export async function loadMore(repoName, numLoaded, totalResults, searchParams) 
       results: result.resultsByRepo[repoName],
     }));
 }
+
+export async function details(repoName, filename, line, character) {
+
+  const params = {
+    repoName,
+    line,
+    character,
+    filename,
+  };
+
+  console.log(params);
+
+  return fetch(`api/v2/hover?${qs(params)}`)
+    .then(response => response.json());
+}

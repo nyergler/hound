@@ -32,6 +32,8 @@ type Searcher struct {
 	shutdownRequested bool
 	shutdownCh        chan empty
 	doneCh            chan empty
+
+	VcsDir string
 }
 
 // Struct used to send the results from newSearcherConcurrent function.
@@ -436,6 +438,7 @@ func newSearcher(
 		Repo:       repo,
 		doneCh:     make(chan empty),
 		shutdownCh: make(chan empty, 1),
+		VcsDir:     vcsDir,
 	}
 
 	go func() {
@@ -501,8 +504,8 @@ func newSearcherConcurrent(
 	s, err := newSearcher(dbpath, name, repo, refs, lim)
 	if err != nil {
 		resultCh <- searcherResult{
-			name:     name,
-			err:      err,
+			name: name,
+			err:  err,
 		}
 		return
 	}

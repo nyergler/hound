@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -22,6 +23,7 @@ func assetInfo(path string) (os.FileInfo, error) {
 func Content(dev bool, cfg *config.Config) (http.Handler, error) {
 	if dev {
 		_, file, _, _ := runtime.Caller(0)
+		fmt.Println(filepath.Join(filepath.Dir(file), "..", ".build", "ui"))
 		return http.FileServer(
 			// serve the webpack-built files because Babel
 			http.Dir(filepath.Join(filepath.Dir(file), "..", ".build", "ui")),

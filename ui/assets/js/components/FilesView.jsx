@@ -6,6 +6,8 @@ import { connect } from 'react-redux';
 import { loadMore } from '../actions';
 import { UrlToRepo } from '../common';
 
+import { details } from '../api';
+
 import styles from '../../css/hound.css';
 
 
@@ -16,21 +18,52 @@ const getRegExp = (q, icase) => {
     );
 }
 
+class Identifier extends React.Component {
+  onHover(e) {
+    details(this.props.reponame, this.props.filename, this.props.line, this.props.offset)
+    .then(d => {
+      console.log('details --> ', d);
+    });
+  }
+
+  render() {
+    return <span onMouseOver={this.onHover.bind(this)}>
+      {this.props.children}
+    </span>;
+  }
+}
+
 const TOKEN_TAGS = {
-  other: 'span'
+  NameOther: Identifier,
+
+  other: 'span',
 }
 
 /**
  * Produce html for a line using the regexp to highlight matches.
  */
-var ContentFor = function(line, regexp) {
+var ContentFor = function(repo, filename, line, regexp) {
   if (!line.LineTokens) {
     return line.FormattedLine;
   }
+  let offset = 0;
+  const lineNum = (line.Number || 1) - 1;
   const tokens = line.LineTokens;
   const buffer = tokens.map((t, i) => {
     const Tag = TOKEN_TAGS[t.type] || TOKEN_TAGS['other'];
-    return <Tag key={`tag-${i}`} className={styles[t.type]}>{t.value}</Tag>;
+    const tokenTag = (
+      <Tag key={`tag-${i}`} className={styles[t.type]}
+        reponame={repo}
+        filename={filename}
+        offset={offset}
+        line={lineNum}
+      >
+        {t.value}
+      </Tag>
+    );
+    offset += t.value.length;
+
+    return tokenTag;
   });
 
   return <Fragment>{buffer}</Fragment>;
@@ -39,7 +72,7 @@ var ContentFor = function(line, regexp) {
 class FilesView extends React.Component {
 
     render() {
-      var rev = this.props.rev,
+      const rev = this.props.rev,
           repo = this.props.repos[this.props.repo],
           regexp = getRegExp(this.props.regexp, this.props.searchParams.i),
           matches = this.props.matches,
@@ -53,7 +86,7 @@ class FilesView extends React.Component {
               <a href={UrlToRepo(repo, fileMatch.Filename, line.Number, rev)}
                   className={styles.lnum}
                   target="_blank">{line.Number}</a>
-              <span className={styles.lval}>{ContentFor(line, regexp)}</span>
+              <span className={styles.lval}>{ContentFor(this.props.repo, fileMatch.Filename, line, regexp)}</span>
             </div>
             );
           });
