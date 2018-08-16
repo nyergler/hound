@@ -6,7 +6,7 @@ import { connect } from 'react-redux';
 import { loadMore } from '../actions';
 import { UrlToRepo } from '../common';
 
-import { details } from '../api';
+import { Identifier } from './Identifier';
 
 import styles from '../../css/hound.css';
 
@@ -18,23 +18,11 @@ const getRegExp = (q, icase) => {
     );
 }
 
-class Identifier extends React.Component {
-  onHover(e) {
-    details(this.props.reponame, this.props.filename, this.props.line, this.props.offset)
-    .then(d => {
-      console.log('details --> ', d);
-    });
-  }
-
-  render() {
-    return <span onMouseOver={this.onHover.bind(this)}>
-      {this.props.children}
-    </span>;
-  }
-}
-
 const TOKEN_TAGS = {
   NameOther: Identifier,
+  NameFunction: Identifier,
+  NameClass: Identifier,
+  NameVariable: Identifier,
 
   other: 'span',
 }

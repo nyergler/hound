@@ -1,0 +1,11 @@
+.overlay {
+    display: block;
+    position: fixed;
+    background-color: lightblue;
+    border: 1px solid mediumaquamarine;
+    margin-top: -0.55em;
+}
+
+.highlight {
+    background-color: lightcoral;
+}
