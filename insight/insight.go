@@ -2,7 +2,11 @@ package insight
 
 import (
 	"context"
+	"errors"
 	"net"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/sourcegraph/go-langserver/pkg/lsp"
 	"github.com/sourcegraph/jsonrpc2"
@@ -17,10 +21,37 @@ type clientKey struct {
 	root       string
 }
 
+var languages = map[string]string{
+	"js":  "typescript",
+	"jsx": "typescript",
+	"ts":  "typescript",
+	"tsx": "typescript",
+}
 var clientCache map[clientKey]*LspClient
 
 func init() {
 	clientCache = make(map[clientKey]*LspClient)
+}
+
+func Language(filename string) string {
+	e := strings.ToLower(strings.TrimLeft(filepath.Ext(filename), "."))
+	lang, ok := languages[e]
+
+	if ok {
+		return lang
+	}
+
+	return e
+}
+
+func LanguageServerAddress(language string) (string, error) {
+	envKey := strings.ToUpper("HOUND_LSP_" + language)
+	addr, ok := os.LookupEnv(envKey)
+	if ok {
+		return addr, nil
+	}
+
+	return addr, errors.New("No language server available for " + language)
 }
 
 func Connect(ctx context.Context, language, root string) (*LspClient, error) {
@@ -30,8 +61,12 @@ func Connect(ctx context.Context, language, root string) (*LspClient, error) {
 		return client, nil
 	}
 
-	client, err := Dial(ctx, language, "127.0.0.1:2089")
+	address, err := LanguageServerAddress(language)
+	if err != nil {
+		return nil, err
+	}
 
+	client, err = Dial(ctx, language, address)
 	if err != nil {
 		return nil, err
 	}
@@ -52,8 +87,6 @@ func Dial(ctx context.Context, languageId, address string) (*LspClient, error) {
 	)
 	tcpConn, err := net.Dial("tcp", address)
 	conn := jsonrpc2.NewConn(ctx, jsonrpc2.NewBufferedStream(tcpConn, jsonrpc2.VSCodeObjectCodec{}), handler)
-	// ch := channel.RawJSON(conn, conn)
-	// cli := jrpc2.NewClient(ch, nil) // nil for default options
 
 	return &LspClient{
 		conn,

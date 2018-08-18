@@ -325,9 +325,10 @@ func Setup(m *http.ServeMux, idx map[string]*searcher.Searcher) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		client, err := insight.Connect(ctx, "javascript", repoRoot.String())
+		client, err := insight.Connect(ctx, insight.Language(r.FormValue("filename")), repoRoot.String())
 		if err != nil {
 			writeError(w, err, http.StatusBadGateway)
+			return
 		}
 
 		// make the request
@@ -348,6 +349,9 @@ func Setup(m *http.ServeMux, idx map[string]*searcher.Searcher) {
 		implementation, err := client.Implementation(ctx, &position)
 		references, err := client.References(ctx, &position, false)
 
+		if len(definition) > 0 {
+			definition[0].URI = lsp.DocumentURI(strings.TrimPrefix(string(definition[0].URI), repoRoot.String()))
+		}
 		writeResp(w, &HoverInfo{Hover: *hoverInfo, Definition: definition, Implementation: implementation, References: references})
 
 	})

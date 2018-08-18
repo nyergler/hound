@@ -6,7 +6,7 @@ import { connect } from 'react-redux';
 import { loadMore } from '../actions';
 import { UrlToRepo } from '../common';
 
-import { Identifier } from './Identifier';
+import Identifier from './Identifier';
 
 import styles from '../../css/hound.css';
 

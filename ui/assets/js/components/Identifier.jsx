@@ -1,6 +1,8 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 
+import { UrlToRepo } from '../common';
 import { details } from '../api';
 
 import styles from './Identifier.css';
@@ -12,16 +14,15 @@ class IdentifierDetail extends React.Component {
   }
 
   render() {
-    const hoverDetail = [];
-    if (this.props.detail && this.props.detail.Hover) {
-      this.props.detail.Hover.contents.forEach((h) => {
+    const hoverContents = (this.props.hover && this.props.hover.contents) || [];
+    const hoverDetail = hoverContents.map((h, i) => {
         if (typeof(h) === 'object') {
-          hoverDetail.push(<p>{h.value}</p>);
+          return (<p key={i}>{h.value}</p>);
         } else {
-          hoverDetail.push(<p>{h}</p>);
+          return(<p key={i}>{h}</p>);
         }
       });
-    }
+
     return <span className={styles.overlay}
       onMouseOver={this.props.onMouseOver}
       onMouseOut={this.props.onMouseOut}
@@ -30,6 +31,16 @@ class IdentifierDetail extends React.Component {
       >
       <h3>{this.props.filename}</h3>
       <div>{hoverDetail}</div>
+      <div className={styles.overlayButtons}>
+        <button>References</button>
+        {
+          this.props.definition && this.props.definition.length > 0 &&
+          <a target="_blank"
+            href={UrlToRepo(this.props.repo, this.props.definition[0].uri, this.props.definition[0].range.start.line + 1, 'master')}>
+              Definition
+          </a>
+        }
+      </div>
     </span>;
   }
 }
@@ -58,9 +69,12 @@ export class Identifier extends React.Component {
           <IdentifierDetail
             filename={this.props.filename}
             reponame={this.props.reponame}
+            repo={this.props.repo}
             line={this.props.line}
             offset={this.props.offset}
-            detail={this.state.detail}
+
+            hover={this.state.detail.Hover}
+            definition={this.state.detail.Definition}
 
             onMouseOver={this.onMouseOver.bind(this)}
             onMouseOut={this.onMouseOut.bind(this)}
@@ -80,7 +94,7 @@ export class Identifier extends React.Component {
           if (this.state.visible) {
             console.log(detail);
 
-            this.setState({ detail });
+            this.setState({ ...detail, detail });
           }
         });
     }
@@ -120,3 +134,14 @@ Identifier.propTypes = {
   offset: PropTypes.number.isRequired,
   children: PropTypes.string,
 };
+
+
+const mapStateToProps = ({ repos }, { reponame }) => {
+  return {
+    repo: repos[reponame],
+  }
+}
+
+export default connect(
+  mapStateToProps,
+)(Identifier);

@@ -1,11 +1,19 @@
 .overlay {
     display: block;
-    position: fixed;
+    position: absolute;
     background-color: lightblue;
-    border: 1px solid mediumaquamarine;
-    margin-top: -0.55em;
+    border: 2px solid mediumaquamarine;
+    margin-top: -0.25rem;
+    margin-left: 2rem;
+    padding: 1rem;
 }
 
 .highlight {
     background-color: lightcoral;
+}
+
+.overlayButtons {
+    display: block;
+    width: 100%;
+    margin: 0;
 }
