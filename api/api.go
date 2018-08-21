@@ -218,6 +218,12 @@ func parseRangeValue(rv string) (int, int) {
 	return b, e
 }
 
+func relativeLocations(repoRoot string, locations *[]lsp.Location) {
+	for _, l := range *locations {
+		l.URI = lsp.DocumentURI(strings.TrimPrefix(string(l.URI), repoRoot))
+	}
+}
+
 func Setup(m *http.ServeMux, idx map[string]*searcher.Searcher) {
 
 	m.HandleFunc("/api/v1/repos", func(w http.ResponseWriter, r *http.Request) {
@@ -348,6 +354,10 @@ func Setup(m *http.ServeMux, idx map[string]*searcher.Searcher) {
 		definition, err := client.Definition(ctx, &position)
 		implementation, err := client.Implementation(ctx, &position)
 		references, err := client.References(ctx, &position, false)
+
+		relativeLocations(repoRoot.String(), &definition)
+		relativeLocations(repoRoot.String(), &implementation)
+		relativeLocations(repoRoot.String(), &references)
 
 		if len(definition) > 0 {
 			definition[0].URI = lsp.DocumentURI(strings.TrimPrefix(string(definition[0].URI), repoRoot.String()))
